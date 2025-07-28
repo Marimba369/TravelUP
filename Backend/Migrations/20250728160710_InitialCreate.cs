@@ -48,7 +48,7 @@ namespace Backend.Migrations
                 {
                     RequestId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<string>(type: "text", nullable: true),
+                    Code = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     TravelDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -78,7 +78,9 @@ namespace Backend.Migrations
                     FlightName = table.Column<string>(type: "text", nullable: true),
                     Cost = table.Column<double>(type: "double precision", nullable: false),
                     RequestId = table.Column<int>(type: "integer", nullable: false),
-                    AgencyId = table.Column<int>(type: "integer", nullable: false)
+                    AgencyId = table.Column<int>(type: "integer", nullable: false),
+                    CheckInDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CheckOutDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

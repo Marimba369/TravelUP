@@ -55,6 +55,12 @@ namespace Backend.Migrations
                     b.Property<int>("AgencyId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("CheckInDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CheckOutDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<double>("Cost")
                         .HasColumnType("double precision");
 
@@ -84,8 +90,8 @@ namespace Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RequestId"));
 
-                    b.Property<string>("Code")
-                        .HasColumnType("text");
+                    b.Property<int>("Code")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
