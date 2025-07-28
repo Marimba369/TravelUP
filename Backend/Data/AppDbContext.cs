@@ -1,49 +1,43 @@
-
 using Microsoft.EntityFrameworkCore;
-using TravelUp.Models; 
+using TravelUp.Models;
+using TravelUp.Models.Enum;
 
-namespace TravelUp.Data
+namespace TravelUp.Data;
+public class AppDbContext : DbContext
 {
-    public class AppDbContext : DbContext
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
+    }
 
-        // DbSets para cada entidade que você quer mapear para uma tabela no banco de dados
-        public DbSet<User> User { get; set; }
-        public DbSet<Request> Request { get; set; }
-        public DbSet<Agency> Agencie { get; set; }
-        public DbSet<Quote> Quote { get; set; }
+    public DbSet<Agency> Agencies { get; set; }
+    public DbSet<Quote> Quotes { get; set; }
+    public DbSet<Request> Requests { get; set; }
+    public DbSet<Users> Users { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Relação 1:N - User -> Requests
+        modelBuilder.Entity<Users>()
+            .HasMany(u => u.Requests)
+            .WithOne(r => r.User)
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            // Configurações de relacionamento usando Fluent API (opcional, mas bom para clareza e controle)
+        // Relação 1:N - Request -> Quotes
+        modelBuilder.Entity<Request>()
+            .HasMany(r => r.Quotes)
+            .WithOne(q => q.Request)
+            .HasForeignKey(q => q.RequestId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            // Relacionamento AppUser (1) para Request (N)
-            modelBuilder.Entity<Request>()
-                .HasOne(r => r.User)        // Uma Request tem Um User
-                .WithMany(u => u.Requests)  // Um User tem Muitas Requests
-                .HasForeignKey(r => r.UserId); // A chave estrangeira está em Request
+        // Relação 1:N - Agency -> Quotes
+        modelBuilder.Entity<Agency>()
+            .HasMany(a => a.Quotes)
+            .WithOne(q => q.Agency)
+            .HasForeignKey(q => q.AgencyId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            // Relacionamento Request (1) para Quote (N)
-            modelBuilder.Entity<Quote>()
-                .HasOne(q => q.Request)     // Uma Quote tem Uma Request
-                .WithMany(r => r.Quote)    // Uma Request tem Muitas Quotes
-                .HasForeignKey(q => q.RequestId); // A chave estrangeira está em Quote
-
-            // Relacionamento Agency (1) para Quote (N)
-            modelBuilder.Entity<Quote>()
-                .HasOne(q => q.Agency)      // Uma Quote tem Uma Agency
-                .WithMany(a => a.Quotes)    // Uma Agency tem Muitas Quotes
-                .HasForeignKey(q => q.AgencyId); // A chave estrangeira está em Quote
-
-            // Opcional: Configurar o enum para ser armazenado como string (por padrão é int)
-            modelBuilder.Entity<Request>()
-                .Property(r => r.Status)
-                .HasConversion<string>(); // Armazena o enum como string no DB
-        }
+        base.OnModelCreating(modelBuilder);
     }
 }

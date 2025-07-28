@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using TravelUp.Models.Enum;
+using System.ComponentModel.DataAnnotations;
 
 namespace TravelUp.Models;
 
 public class Request
 {
+    [Key]
     public int RequestId { get; set; }
     public string? Code { get; set; }
     public string? Description { get; set; }
@@ -17,10 +19,8 @@ public class Request
 
 
     public int UserId { get; set; }
-
     [ForeignKey("UserId")]
     public Users? User { get; set; }
+
     public ICollection<Quote>? Quotes { get; set; }
-    
-    // Propriedade de Navegação para o relacionamento 1:N com Quote
 }
