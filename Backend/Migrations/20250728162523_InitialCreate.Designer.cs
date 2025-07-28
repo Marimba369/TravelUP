@@ -12,7 +12,7 @@ using TravelUp.Data;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250728160710_InitialCreate")]
+    [Migration("20250728162523_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
