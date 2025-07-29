@@ -11,7 +11,7 @@ function Navbar() {
                             <Link className="nav-link" to="/"> Request </Link>
                         </li>
                         <li className="nav-item">
-                            <Link className="nav-link" to="/Agency"> Agency </Link>
+                            <Link className="nav-link" to="/AddAgency"> Agency </Link>
                         </li>
                     </ul>
                 </div>

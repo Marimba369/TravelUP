@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createAgency } from "../services/api";
 
-function Addagency() {
+function AddAgency() {
   const [agency, setAgency] = useState({
     name: "",
     email: "",
@@ -35,24 +35,27 @@ function Addagency() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Adicionar Agência</h2>
-      <div>
-        <label>Nome:</label>
-        <input type="text" name="name" value={agency.name} onChange={handleChange} required />
-      </div>
-      <div>
-        <label>Email:</label>
-        <input type="email" name="email" value={agency.email} onChange={handleChange} required />
-      </div>
-      <div>
-        <label>Telefone:</label>
-        <input type="text" name="phone" value={agency.phone} onChange={handleChange} required />
-      </div>
-      <button type="submit">Salvar</button>
-      {message && <p>{message}</p>}
-    </form>
+    <>
+      <form onSubmit={handleSubmit}>
+        <h2>Adicionar Agência</h2>
+        <div>
+          <label>Nome:</label>
+          <input type="text" name="name" value={agency.name} onChange={handleChange} required />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input type="email" name="email" value={agency.email} onChange={handleChange} required />
+        </div>
+        <div>
+          <label>Telefone:</label>
+          <input type="text" name="phone" value={agency.phone} onChange={handleChange} required />
+        </div>
+        <button type="submit">Salvar</button>
+        {message && <p>{message}</p>}
+      </form>
+    </>
+  
   );
 }
 
-export default Addagency;
+export default AddAgency;

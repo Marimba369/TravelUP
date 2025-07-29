@@ -1,19 +1,19 @@
 import "./App.css"
 import { Routes, Route } from "react-router-dom"
 import Navbar from "./components/Navbar"
-import Addagency from "./pages/Addagency"
+import AddAgency from "./pages/AddAgency"
 
 function App() {
   return (
-    <div>
-      <Navbar />
-        <Routes>
+    <>
+      <Navbar/>
+      <Routes>
 
-          <Route path="/addagency" element={<Addagency />} />
+        <Route path="/AddAgency" element={<AddAgency />} />
 
-          <Route path="*" element={<p>Page not found</p>} />
+        <Route path="*" element={<p>Page not found</p>} />
       </Routes>
-    </div>
+    </>
   );
 }
 
