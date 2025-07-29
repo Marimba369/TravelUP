@@ -1,22 +1,28 @@
 using System.ComponentModel.DataAnnotations;
-using TravelUp.Models;
 using TravelUp.Models.Enum;
 
-namespace TravelUp.DTOs;
-
-public class RequestDto
+public class RequestCreateDto
 {
-    public int RequestId { get; set; }
-    public int? Code { get; set; }
+    [Required]
+    public int Code { get; set; }
+
     public string? Description { get; set; }
-    public RequestStatus Status { get; set; } = RequestStatus.Draft; 
+
+    [Required]
+    public RequestStatus Status { get; set; }
+
+    [Required]
     public DateTime TravelDate { get; set; }
+
+    [Required]
     public DateTime ReturnDate { get; set; }
+
+    [Required]
     public bool IsRoundTrip { get; set; }
+
+    [Required]
     public bool NeedHotel { get; set; }
 
+    [Required]
     public int UserId { get; set; }
-    public string? UserName { get; set; }  
-
-    public List<QuoteDto>? Quotes { get; set; }
 }
