@@ -11,7 +11,7 @@ const api = axios.create({
 
 // add agency
 export const createAgency = async (agencyData) => {
-  return await api.post("/agencies", agencyData);
+  return await api.post("/Agency", agencyData);
 };
 
 export default api;

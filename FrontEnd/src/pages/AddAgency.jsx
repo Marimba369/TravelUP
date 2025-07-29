@@ -4,8 +4,8 @@ import { createAgency } from "../services/api";
 function AddAgency() {
   const [agency, setAgency] = useState({
     name: "",
-    email: "",
-    phone: "",
+    contactEmail: "",
+    phoneNumber: "",
   });
   const [message, setMessage] = useState("");
 
@@ -21,7 +21,7 @@ function AddAgency() {
       const response = await createAgency(agency);
       if (response.status === 201 || response.status === 200) {
         setMessage("Agência adicionada com sucesso!");
-        setAgency({ name: "", email: "", phone: "" });
+        setAgency({ name: "", contactEmail: "", phoneNumber: "" });
       } else {
         setMessage("Erro ao adicionar agência.");
       }
@@ -44,11 +44,11 @@ function AddAgency() {
         </div>
         <div>
           <label>Email:</label>
-          <input type="email" name="email" value={agency.email} onChange={handleChange} required />
+          <input type="email" name="contactEmail" value={agency.email} onChange={handleChange} required />
         </div>
         <div>
           <label>Telefone:</label>
-          <input type="text" name="phone" value={agency.phone} onChange={handleChange} required />
+          <input type="text" name="phoneNumber" value={agency.phone} onChange={handleChange} required />
         </div>
         <button type="submit">Salvar</button>
         {message && <p>{message}</p>}
