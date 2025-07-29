@@ -9,4 +9,6 @@ public class QuoteDto
     public int RequestId { get; set; }
     public int AgencyId { get; set; }
     public string? AgencyName { get; set; } 
+    public DateTime CheckInDate { get; set; }
+    public DateTime CheckOutDate { get; set; }
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TravelUp.Models;
 using TravelUp.Models.Enum;
 
@@ -37,6 +38,19 @@ public class AppDbContext : DbContext
             .WithOne(q => q.Agency)
             .HasForeignKey(q => q.AgencyId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // change DateTime properties to UTC 
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties()
+                .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?)))
+            {
+                property.SetValueConverter(new ValueConverter<DateTime, DateTime>(
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                ));
+            }
+        }
 
         base.OnModelCreating(modelBuilder);
     }
