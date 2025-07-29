@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createAgency } from "../services/api";
 
-function AddAgency() {
+function Addagency() {
   const [agency, setAgency] = useState({
     name: "",
     email: "",
@@ -55,4 +55,4 @@ function AddAgency() {
   );
 }
 
-export default AddAgency;
+export default Addagency;
