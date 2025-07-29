@@ -1,7 +1,7 @@
 import "./App.css"
 import { Routes, Route } from "react-router-dom"
 import Navbar from "./components/Navbar"
-import AddAgency from "./pages/Addagency"
+import Addagency from "./pages/Addagency"
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
       <Navbar />
         <Routes>
 
-          <Route path="/addagency" element={<AddAgency />} />
+          <Route path="/addagency" element={<Addagency />} />
 
           <Route path="*" element={<p>Page not found</p>} />
       </Routes>
