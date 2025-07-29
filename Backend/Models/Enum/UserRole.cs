@@ -6,8 +6,10 @@ public enum Role
 {
     [Display(Name = "Traveler")]
     Traveler,
+    
     [Display(Name = "Facilitator")]
-    Facilator,
+    Facilitator,
+    
     [Display(Name = "Manager")]
-    Manage
-};
+    Manager
+}
