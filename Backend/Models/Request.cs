@@ -11,12 +11,10 @@ public class Request
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int RequestId { get; set; }
     [Required]
-    public int Code { get; set; }
-    [StringLength(250)]
     public string? Description { get; set; }
     [Required]
     [EnumDataType(typeof(RequestStatus))]
-    public RequestStatus Status { get; set; }
+    public RequestStatus Status { get; set; } = RequestStatus.Pending;
     [Required]
     [DataType(DataType.Date)]
     public DateTime? TravelDate { get; set; }
@@ -27,6 +25,13 @@ public class Request
     public bool IsRoundTrip { get; set; }
     [Required]
     public bool NeedHotel { get; set; }
+
+    [Required]
+    [StringLength(250)]
+    public string? Origin { get; set; }
+    [Required]
+    [StringLength(250)]
+    public string? Destination { get; set; }
 
     [Required]
     [ForeignKey(nameof(Users))]

@@ -3,11 +3,13 @@ import { createAgency } from "../services/api";
 
 function AddAgency() {
   const [agency, setAgency] = useState({
-    name: "",
-    contactEmail: "",
-    phoneNumber: "",
+    name: '',
+    contactEmail: '',
+    phoneNumber: ''
   });
-  const [message, setMessage] = useState("");
+
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setAgency({ ...agency, [e.target.name]: e.target.value });
@@ -15,46 +17,68 @@ function AddAgency() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-
     try {
-      const response = await createAgency(agency);
-      if (response.status === 201 || response.status === 200) {
-        setMessage("Agência adicionada com sucesso!");
-        setAgency({ name: "", contactEmail: "", phoneNumber: "" });
-      } else {
-        setMessage("Erro ao adicionar agência.");
-      }
-    } catch (error) {
-      if (error.response) {
-        setMessage(`Erro: ${error.response.data?.message || "Erro no servidor"}`);
-      } else {
-        setMessage("Erro de rede: " + error.message);
-      }
+      await createAgency(agency);
+      setMessage('Agência adicionada com sucesso!');
+      setError('');
+      setAgency({ name: '', contactEmail: '', phoneNumber: '' });
+    } catch (err) {
+      console.error('Erro ao adicionar agência:', err);
+      setError('Erro ao adicionar agência. Verifique os dados e tente novamente.');
+      setMessage('');
     }
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <h2>Adicionar Agência</h2>
-        <div>
-          <label>Nome:</label>
-          <input type="text" name="name" value={agency.name} onChange={handleChange} required />
+    <div className="container mt-5">
+      <div className="card shadow">
+        <div className="card-body">
+          <h2 className="card-title text-center text-primary mb-4">Adicionar Agência</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="form-label">Nome</label>
+              <input
+                type="text"
+                className="form-control"
+                name="name"
+                value={agency.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Email</label>
+              <input
+                type="email"
+                className="form-control"
+                name="contactEmail"
+                value={agency.contactEmail}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Telefone</label>
+              <input
+                type="text"
+                className="form-control"
+                name="phoneNumber"
+                value={agency.phoneNumber}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary w-100">Salvar</button>
+
+            {message && <div className="alert alert-success text-center mt-3">{message}</div>}
+            {error && <div className="alert alert-danger text-center mt-3">{error}</div>}
+          </form>
         </div>
-        <div>
-          <label>Email:</label>
-          <input type="email" name="contactEmail" value={agency.email} onChange={handleChange} required />
-        </div>
-        <div>
-          <label>Telefone:</label>
-          <input type="text" name="phoneNumber" value={agency.phone} onChange={handleChange} required />
-        </div>
-        <button type="submit">Salvar</button>
-        {message && <p>{message}</p>}
-      </form>
-    </>
-  
+      </div>
+    </div>
   );
 }
 

@@ -98,10 +98,12 @@ namespace Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RequestId"));
 
-                    b.Property<int>("Code")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Destination")
+                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
@@ -110,6 +112,11 @@ namespace Backend.Migrations
 
                     b.Property<bool>("NeedHotel")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
 
                     b.Property<DateTime>("ReturnDate")
                         .HasColumnType("timestamp with time zone");

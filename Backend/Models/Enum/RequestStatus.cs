@@ -10,5 +10,6 @@ public enum RequestStatus
     WaitingForApproval,
     Approved,
     Rejected,
+    Pending,
     Cancelled
 }

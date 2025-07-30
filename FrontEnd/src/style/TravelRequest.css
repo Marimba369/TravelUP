@@ -1,0 +1,16 @@
+form input,
+form textarea {
+  font-size: 0.95rem;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.btn {
+  font-weight: 500;
+}
+
+.alert {
+  font-size: 0.9rem;
+}

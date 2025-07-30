@@ -48,13 +48,14 @@ namespace Backend.Migrations
                 {
                     RequestId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<int>(type: "integer", nullable: false),
-                    Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     TravelDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsRoundTrip = table.Column<bool>(type: "boolean", nullable: false),
                     NeedHotel = table.Column<bool>(type: "boolean", nullable: false),
+                    Origin = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    Destination = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
