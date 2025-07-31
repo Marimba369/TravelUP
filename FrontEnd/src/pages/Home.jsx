@@ -1,6 +1,6 @@
+function Home() {
 
-function Quote( { props })
-{
+
     return (
         <div>
             
@@ -8,4 +8,4 @@ function Quote( { props })
     )
 }
 
-export default Quote;
+export default Home

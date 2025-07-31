@@ -1,7 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createTravelRequest } from "../services/api";
+import api from "../services/api";
+import QuoteList from "../components/QuoteList";
 
 function TravelRequest() {
+
+  const [selectedAgency, setSelectedAgency] = useState("");
+  const [agencyData, setAgencyData] = useState(null);
+  const [agencies, setAgencies] = useState([]);
+  const [showQuotes, setShowQuotes] = useState(false);
+  const [selectedQuote, setSelectedQuote] = useState(null);
+
   const [formData, setFormData] = useState({
     description: "",
     travelDate: "",
@@ -13,12 +22,46 @@ function TravelRequest() {
     userId: ""
   });
 
+  useEffect(() => {
+    if (!selectedAgency) {
+      setAgencyData(null);
+      return;
+    }
+
+    const fetchAgencyDetails = async () => {
+      try {
+        const matchedAgency = agencies.find((agency) => agency.name === selectedAgency);
+        const agencyId = matchedAgency ? matchedAgency.agencyId : null;
+
+        const response = await api.get(`/Agency/${agencyId}`);
+        setAgencyData(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar dados da agência", error);
+      }
+    };
+
+    fetchAgencyDetails();
+  }, [selectedAgency]);
+
+  useEffect(() => {
+    const fetchAgencies = async () => {
+      try {
+        const response = await api.get("/Agency");
+        setAgencies(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar agências:", error);
+      }
+    };
+
+    fetchAgencies();
+  }, []);
+
   const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
 
     const { name, value, type, checked } = e.target;
-    
+
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value
@@ -48,7 +91,7 @@ function TravelRequest() {
         userId: ""
       });
     } catch (error) {
-      //console.log(formData);
+
       setMessage("Erro ao enviar o pedido.");
       console.error(error);
     }
@@ -100,6 +143,50 @@ function TravelRequest() {
             <button type="submit" className="btn btn-primary w-100">Enviar Pedido</button>
             {message && <div className="alert alert-info text-center mt-3">{message}</div>}
           </form>
+
+          <select
+            className="form-select"
+            name="agency"
+            value={selectedAgency || ""}
+            onChange={(e) => setSelectedAgency(e.target.value)}
+          >
+            <option value="">Selecione uma agência</option>
+            {agencies.map((agency) => (
+              <option key={agency.id} value={agency.id}>
+                {agency.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Botão para ver cotações */}
+          {agencyData && (
+            <>
+              <button
+                className="btn btn-success w-100 mt-3"
+                onClick={() => setShowQuotes(true)}
+              >
+                Ver Cotações da Agência
+              </button>
+
+              {showQuotes && (
+                <div className="mt-4">
+                  <h4 className="text-primary">Cotações de {agencyData.name}</h4>
+
+                  {agencyData.quotes && agencyData.quotes.length > 0 ? (
+                    <QuoteList
+                      quotes={agencyData.quotes}
+                      selectedQuote={selectedQuote}
+                      onQuoteSelected={(quote) => setSelectedQuote(quote)}
+                    />
+                  ) : (
+                    <div className="alert alert-warning text-center">
+                      Nenhuma cotação disponível para esta agência.
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
