@@ -18,9 +18,9 @@ namespace Backend.Migrations
                 {
                     AgencyId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    ContactEmail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    ContactEmail = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

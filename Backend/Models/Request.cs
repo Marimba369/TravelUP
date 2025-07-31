@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using TravelUp.Models.Enum;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace TravelUp.Models;
 
@@ -14,7 +15,7 @@ public class Request
     public string? Description { get; set; }
     [Required]
     [EnumDataType(typeof(RequestStatus))]
-    public RequestStatus Status { get; set; } = RequestStatus.Pending;
+    public RequestStatus Status { get; set; } = RequestStatus.WaitingForQuotes;
     [Required]
     [DataType(DataType.Date)]
     public DateTime? TravelDate { get; set; }
@@ -38,5 +39,6 @@ public class Request
     public int UserId { get; set; }
     public Users? User { get; set; }
 
+    [JsonIgnore]
     public ICollection<Quote>? Quotes { get; set; }
 }

@@ -1,15 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TravelUp.Models.Enum;
-
-public enum Role
+namespace TravelUp.Models.Enum
 {
-    [Display(Name = "Traveler")]
-    Traveler,
-    
-    [Display(Name = "Facilitator")]
-    Facilitator,
-    
-    [Display(Name = "Manager")]
-    Manager
+    public enum  Role
+    {
+        [Display(Name = "Traveler")]
+        Traveler = 1,
+
+        [Display(Name = "Facilitator")]
+        Facilitator = 2,
+
+        [Display(Name = "Manager")]
+        Manager = 3
+    }
 }

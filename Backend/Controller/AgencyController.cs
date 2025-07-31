@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravelUp.Models;
+using TravelUp.DTOs;
 using TravelUp.Data;
 
-namespace TravelUp.Controller
+namespace TravelUp.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AgencyController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -16,88 +17,124 @@ namespace TravelUp.Controller
             _context = context;
         }
 
-        // GET: api/Agency
+        // GET api/agency
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Agency>>> GetAgencies()
+        public async Task<ActionResult<List<AgencyDto>>> GetAll()
         {
-            return await _context.Agencies
-                                 .Include(a => a.Quotes)
-                                 .ToListAsync();
+            var agencies = await _context.Agencies
+                .Include(a => a.Quotes)
+                .ToListAsync();
+
+            var agencyDtos = agencies.Select(a => new AgencyDto
+            {
+                AgencyId = a.AgencyId,
+                Name = a.Name,
+                ContactEmail = a.ContactEmail,
+                PhoneNumber = a.PhoneNumber,
+                Quotes = a.Quotes?.Select(q => new QuoteSummaryDto
+                {
+                    QuoteId = q.QuoteId,
+                    HotelName = q.HotelName,
+                    FlightName = q.FlightName,
+                    Cost = q.Cost,
+                    CheckInDate = q.CheckInDate,
+                    CheckOutDate = q.CheckOutDate
+                }).ToList()
+            }).ToList();
+
+            return Ok(agencyDtos);
         }
 
-        // GET: api/Agency/5
+        // GET api/agency/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Agency>> GetAgency(int id)
+        public async Task<ActionResult<AgencyDto>> GetById(int id)
         {
             var agency = await _context.Agencies
-                                       .Include(a => a.Quotes)
-                                       .FirstOrDefaultAsync(a => a.AgencyId == id);
+                .Include(a => a.Quotes)
+                .FirstOrDefaultAsync(a => a.AgencyId == id);
 
-            if (agency == null)
+            if (agency == null) return NotFound();
+
+            var agencyDto = new AgencyDto
             {
-                return NotFound();
-            }
+                AgencyId = agency.AgencyId,
+                Name = agency.Name,
+                ContactEmail = agency.ContactEmail,
+                PhoneNumber = agency.PhoneNumber,
+                Quotes = agency.Quotes?.Select(q => new QuoteSummaryDto
+                {
+                    QuoteId = q.QuoteId,
+                    HotelName = q.HotelName,
+                    FlightName = q.FlightName,
+                    Cost = q.Cost,
+                    CheckInDate = q.CheckInDate,
+                    CheckOutDate = q.CheckOutDate
+                }).ToList()
+            };
 
-            return agency;
+            return Ok(agencyDto);
         }
 
-        // POST: api/Agency
+        // POST api/agency
         [HttpPost]
-        public async Task<ActionResult<Agency>> CreateAgency(Agency agency)
+        public async Task<ActionResult<AgencyDto>> Create([FromBody] AgencyCreateDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var agency = new Agency
+            {
+                Name = dto.Name,
+                ContactEmail = dto.ContactEmail,
+                PhoneNumber = dto.PhoneNumber
+            };
+
             _context.Agencies.Add(agency);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetAgency), new { id = agency.AgencyId }, agency);
+            var agencyDto = new AgencyDto
+            {
+                AgencyId = agency.AgencyId,
+                Name = agency.Name,
+                ContactEmail = agency.ContactEmail,
+                PhoneNumber = agency.PhoneNumber,
+                Quotes = null
+            };
+
+            return CreatedAtAction(nameof(GetById), new { id = agency.AgencyId }, agencyDto);
         }
 
-        // PUT: api/Agency/5
+        // PUT api/agency/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAgency(int id, Agency agency)
+        public async Task<IActionResult> Update(int id, [FromBody] AgencyCreateDto dto)
         {
-            if (id != agency.AgencyId)
-            {
-                return BadRequest();
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            _context.Entry(agency).State = EntityState.Modified;
+            var agency = await _context.Agencies.FindAsync(id);
+            if (agency == null) return NotFound();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AgencyExists(id))
-                {
-                    return NotFound();
-                }
+            agency.Name = dto.Name;
+            agency.ContactEmail = dto.ContactEmail;
+            agency.PhoneNumber = dto.PhoneNumber;
 
-                throw;
-            }
+            _context.Agencies.Update(agency);
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // DELETE: api/Agency/5
+        // DELETE api/agency/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAgency(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var agency = await _context.Agencies.FindAsync(id);
-            if (agency == null)
-            {
-                return NotFound();
-            }
+            if (agency == null) return NotFound();
 
             _context.Agencies.Remove(agency);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool AgencyExists(int id)
-        {
-            return _context.Agencies.Any(a => a.AgencyId == id);
         }
     }
 }

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 function Navbar() {
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light shadow mb-4">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light shadow mb-4 rounded-5">
             <div className="container">
                 < Link className="navbar-brand fw-bold text-primary" to="/">Travel Up</Link>
                 <div className="collapse navbar-collapse">

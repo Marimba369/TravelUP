@@ -14,10 +14,13 @@ export const createAgency = async (agencyData) => {
   return await api.post("/Agency", agencyData);
 };
 
-//add request
+// add request
 export const createTravelRequest = async (requestData) => {
   return await api.post("/request", requestData);
 }
-
+// add quote
+export const CreateQuoteRequest = async ( requestData ) => {
+  return await api.post("/Quote", requestData);
+}
 
 export default api;

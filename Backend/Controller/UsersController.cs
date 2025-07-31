@@ -1,85 +1,87 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TravelUp.Models;
 using TravelUp.Data;
+using TravelUp.Models;
+using TravelUp.DTOs;
+using TravelUp.Models.Enum;
 
-[Route("api/[controller]")]
-[ApiController]
-public class UsersController : ControllerBase
+namespace TravelUp.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public UsersController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsersController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    // GET: api/users
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
-    {
-        return await _context.Users.Include(u => u.Requests).ToListAsync();
-    }
-
-    // GET: api/users/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Users>> GetUser(int id)
-    {
-        var user = await _context.Users
-            .Include(u => u.Requests)
-            .FirstOrDefaultAsync(u => u.UserId == id);
-
-        if (user == null)
-            return NotFound();
-
-        return user;
-    }
-
-    // POST: api/users
-    [HttpPost]
-    public async Task<ActionResult<Users>> CreateUser(Users user)
-    {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
-    }
-
-    // PUT: api/users/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(int id, Users user)
-    {
-        if (id != user.UserId)
-            return BadRequest();
-
-        _context.Entry(user).State = EntityState.Modified;
-
-        try
+        public UsersController(AppDbContext context)
         {
-            await _context.SaveChangesAsync();
+            _context = context;
         }
-        catch (DbUpdateConcurrencyException)
+
+        // GET: api/Users
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Users>>> GetAllUsers()
         {
-            if (!_context.Users.Any(u => u.UserId == id))
+            return await _context.Users.ToListAsync();
+        }
+
+        // GET: api/Users/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Users>> GetUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
                 return NotFound();
-            else
-                throw;
+
+            return user;
         }
 
-        return NoContent();
-    }
+        // POST: api/Users
+        [HttpPost]
+        public async Task<ActionResult<Users>> CreateUser(UserCreateDto dto)
+        {
+            if ( !Enum.TryParse<Role>(dto.Role, ignoreCase: true, out var parsedRole) ||
+                !Enum.IsDefined(typeof(Role), parsedRole) )
+            {
+                return BadRequest("Invalid role provided.");
+            }
 
-    // DELETE: api/users/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null)
-            return NotFound();
+            var user = new Users
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                Role = parsedRole
+            };
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
-        return NoContent();
+            return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
+        }
+
+        // PUT
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UserCreateDto dto)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+                return NotFound();
+
+            if (!Enum.TryParse<Role>(dto.Role, true, out var parsedRole))
+            {
+                return BadRequest("Invalid role.");
+            }
+
+            user.Name = dto.Name;
+            user.Email = dto.Email;
+            user.Role = parsedRole;
+
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
