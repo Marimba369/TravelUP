@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar"
 import AddAgency from "./pages/AddAgency"
 import TravelRequest from "./pages/TravelRequest"
 import Home from "./pages/Home"
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
