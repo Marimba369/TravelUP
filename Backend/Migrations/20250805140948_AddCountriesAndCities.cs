@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddCountriesAndCities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,6 +28,20 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Countries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Code = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Countries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -43,6 +57,26 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CountryId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cities_Countries_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Requests",
                 columns: table => new
                 {
@@ -54,13 +88,25 @@ namespace Backend.Migrations
                     ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsRoundTrip = table.Column<bool>(type: "boolean", nullable: false),
                     NeedHotel = table.Column<bool>(type: "boolean", nullable: false),
-                    Origin = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
-                    Destination = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    OriginCityId = table.Column<int>(type: "integer", nullable: false),
+                    DestinationCityId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Requests", x => x.RequestId);
+                    table.ForeignKey(
+                        name: "FK_Requests_Cities_DestinationCityId",
+                        column: x => x.DestinationCityId,
+                        principalTable: "Cities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Requests_Cities_OriginCityId",
+                        column: x => x.OriginCityId,
+                        principalTable: "Cities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Requests_Users_UserId",
                         column: x => x.UserId,
@@ -125,6 +171,11 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cities_CountryId",
+                table: "Cities",
+                column: "CountryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_QuoteItems_QuoteId",
                 table: "QuoteItems",
                 column: "QuoteId");
@@ -138,6 +189,16 @@ namespace Backend.Migrations
                 name: "IX_Quotes_RequestId",
                 table: "Quotes",
                 column: "RequestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_DestinationCityId",
+                table: "Requests",
+                column: "DestinationCityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_OriginCityId",
+                table: "Requests",
+                column: "OriginCityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Requests_UserId",
@@ -161,7 +222,13 @@ namespace Backend.Migrations
                 name: "Requests");
 
             migrationBuilder.DropTable(
+                name: "Cities");
+
+            migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Countries");
         }
     }
 }

@@ -32,13 +32,16 @@ namespace TravelUp.Models
         [Required]
         public bool NeedHotel { get; set; }
 
-        [Required]
-        [StringLength(250)]
-        public string Origin { get; set; } = null!;
 
         [Required]
-        [StringLength(250)]
-        public string Destination { get; set; } = null!;
+        [ForeignKey("OriginCity")]
+        public int OriginCityId { get; set; }
+        public City OriginCity { get; set; } = null!;
+
+        [Required]
+        [ForeignKey("DestinationCity")]
+        public int DestinationCityId { get; set; }
+        public City DestinationCity { get; set; } = null!;
 
         [Required]
         [ForeignKey(nameof(User))]

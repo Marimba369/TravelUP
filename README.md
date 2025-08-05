@@ -8,7 +8,7 @@
 
 As a developer, I want to extend the data model so that a Quote can include hotels with name, cost per night, 
 and total cost, as well as flights with departure and arrival airports, flight number, dates, and cost, 
-so that the system reflects detailed travel options. Adapt existing screens accordingly.
+so that the system reflects detailed travel options. Adapt existing screens accordingly. (X)
 
 - User Stories: 
 

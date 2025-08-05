@@ -32,11 +32,6 @@ public class RequestController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var validationResults = dto.Validate(new ValidationContext(dto));
-        foreach (var error in validationResults)
-        {
-            ModelState.AddModelError(error.MemberNames.FirstOrDefault() ?? "", error.ErrorMessage);
-        }
 
         if (!ModelState.IsValid)
         {
@@ -51,9 +46,9 @@ public class RequestController : ControllerBase
             ReturnDate = (dto.IsRoundTrip == false) ? DateTime.MinValue : dto.ReturnDate, //returnDate === '0001-01-01T00:00:00'
             IsRoundTrip = dto.IsRoundTrip,
             NeedHotel = dto.NeedHotel,
-            Origin = dto.Origin,
-            Destination = dto.Destination,
-            UserId = dto.UserId
+            UserId = dto.UserId,
+            OriginCityId = dto.OriginCityId,
+            DestinationCityId = dto.DestinationCityId,
         };
 
         _context.Requests.Add(request);
@@ -68,6 +63,8 @@ public class RequestController : ControllerBase
         var request = await _context.Requests
             .Include(r => r.User)
             .Include(r => r.Quotes)
+            .Include(r => r.OriginCity)
+            .Include(r => r.DestinationCity)
             .FirstOrDefaultAsync(r => r.RequestId == id);
 
         if (request == null)
@@ -86,53 +83,6 @@ public class RequestController : ControllerBase
             .ToListAsync();
 
         return Ok(requests);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateRequest(int id, [FromBody] CreateRequestDto dto)
-    {
-        if (!Enum.TryParse<RequestStatus>(dto.Status, ignoreCase: true, out var parsedStatus) ||
-            !Enum.IsDefined(typeof(RequestStatus), parsedStatus))
-        {
-            return BadRequest("Invalid Status request provided!");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var validationResults = dto.Validate(new ValidationContext(dto));
-        foreach (var error in validationResults)
-        {
-            ModelState.AddModelError(error.MemberNames.FirstOrDefault() ?? "", error.ErrorMessage);
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var existingRequest = await _context.Requests.FindAsync(id);
-
-        if (existingRequest == null)
-        {
-            return NotFound();
-        }
-
-        existingRequest.Description = dto.Description;
-        existingRequest.Status = dto.Status;
-        existingRequest.TravelDate = dto.TravelDate;
-        existingRequest.ReturnDate = dto.IsRoundTrip ? dto.ReturnDate : DateTime.MinValue;
-        existingRequest.IsRoundTrip = dto.IsRoundTrip;
-        existingRequest.NeedHotel = dto.NeedHotel;
-        existingRequest.Origin = dto.Origin;
-        existingRequest.Destination = dto.Destination;
-        existingRequest.UserId = dto.UserId;
-
-        await _context.SaveChangesAsync();
-
-        return NoContent(); // Ou Ok(existingRequest) se quiser retornar o objeto atualizado
     }
 
     /// <summary>

@@ -44,6 +44,49 @@ namespace Backend.Migrations
                     b.ToTable("Agencies");
                 });
 
+            modelBuilder.Entity("TravelUp.Models.City", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CountryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("Cities");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Countries");
+                });
+
             modelBuilder.Entity("TravelUp.Models.Quote", b =>
                 {
                     b.Property<int>("QuoteId")
@@ -106,10 +149,8 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Destination")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                    b.Property<int>("DestinationCityId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsRoundTrip")
                         .HasColumnType("boolean");
@@ -117,10 +158,8 @@ namespace Backend.Migrations
                     b.Property<bool>("NeedHotel")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Origin")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                    b.Property<int>("OriginCityId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("timestamp with time zone");
@@ -136,6 +175,10 @@ namespace Backend.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("RequestId");
+
+                    b.HasIndex("DestinationCityId");
+
+                    b.HasIndex("OriginCityId");
 
                     b.HasIndex("UserId");
 
@@ -213,6 +256,17 @@ namespace Backend.Migrations
                     b.HasDiscriminator().HasValue("QuoteHotel");
                 });
 
+            modelBuilder.Entity("TravelUp.Models.City", b =>
+                {
+                    b.HasOne("TravelUp.Models.Country", "Country")
+                        .WithMany("Cities")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("TravelUp.Models.Quote", b =>
                 {
                     b.HasOne("TravelUp.Models.Agency", "Agency")
@@ -245,11 +299,27 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("TravelUp.Models.Request", b =>
                 {
+                    b.HasOne("TravelUp.Models.City", "DestinationCity")
+                        .WithMany("DestinationRequests")
+                        .HasForeignKey("DestinationCityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravelUp.Models.City", "OriginCity")
+                        .WithMany("OriginRequests")
+                        .HasForeignKey("OriginCityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TravelUp.Models.Users", "User")
                         .WithMany("Requests")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("DestinationCity");
+
+                    b.Navigation("OriginCity");
 
                     b.Navigation("User");
                 });
@@ -257,6 +327,18 @@ namespace Backend.Migrations
             modelBuilder.Entity("TravelUp.Models.Agency", b =>
                 {
                     b.Navigation("Quotes");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.City", b =>
+                {
+                    b.Navigation("DestinationRequests");
+
+                    b.Navigation("OriginRequests");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.Country", b =>
+                {
+                    b.Navigation("Cities");
                 });
 
             modelBuilder.Entity("TravelUp.Models.Quote", b =>

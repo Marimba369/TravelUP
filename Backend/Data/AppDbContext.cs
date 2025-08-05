@@ -20,6 +20,9 @@ public class AppDbContext : DbContext
     public DbSet<QuoteHotel> QuoteHotels { get; set; } = null!;
     public DbSet<Agency> Agencies { get; set; } = null!;
 
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<City> Cities { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Altera todas as propriedades DateTime para UTC para garantir a consistência.
@@ -64,6 +67,20 @@ public class AppDbContext : DbContext
             .WithMany(q => q.Items)
             .HasForeignKey(qi => qi.QuoteId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configura a relação para a cidade de origem
+        modelBuilder.Entity<Request>()
+            .HasOne(r => r.OriginCity)
+            .WithMany(c => c.OriginRequests) // Crie esta propriedade em City
+            .HasForeignKey(r => r.OriginCityId)
+            .OnDelete(DeleteBehavior.Restrict); // Evita a exclusão em cascata
+
+        // Configura a relação para a cidade de destino
+        modelBuilder.Entity<Request>()
+            .HasOne(r => r.DestinationCity)
+            .WithMany(c => c.DestinationRequests) // Crie esta propriedade em City
+            .HasForeignKey(r => r.DestinationCityId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         base.OnModelCreating(modelBuilder);
     }
