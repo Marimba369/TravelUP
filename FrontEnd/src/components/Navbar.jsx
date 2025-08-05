@@ -43,9 +43,6 @@ function Navbar() {
                 <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarNav">
                     <ul className="navbar-nav ms-auto">
                         <li className="nav-item">
-                            <Link className="nav-link fw-semibold text-light fs-5" to="/">Home</Link>
-                        </li>
-                        <li className="nav-item">
                             <Link className="nav-link fw-semibold text-light fs-5" to="/TravelRequest">Requisição</Link>
                         </li>
                         <li className="nav-item">

@@ -49,9 +49,9 @@ namespace Backend.Migrations
                     RequestId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
                     TravelDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsRoundTrip = table.Column<bool>(type: "boolean", nullable: false),
                     NeedHotel = table.Column<bool>(type: "boolean", nullable: false),
                     Origin = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
@@ -66,7 +66,7 @@ namespace Backend.Migrations
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -75,13 +75,8 @@ namespace Backend.Migrations
                 {
                     QuoteId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    HotelName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    FlightName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Cost = table.Column<double>(type: "numeric(10,2)", nullable: false),
                     RequestId = table.Column<int>(type: "integer", nullable: false),
-                    AgencyId = table.Column<int>(type: "integer", nullable: false),
-                    CheckInDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CheckOutDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    AgencyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,7 +86,7 @@ namespace Backend.Migrations
                         column: x => x.AgencyId,
                         principalTable: "Agencies",
                         principalColumn: "AgencyId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Quotes_Requests_RequestId",
                         column: x => x.RequestId,
@@ -99,6 +94,40 @@ namespace Backend.Migrations
                         principalColumn: "RequestId",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "QuoteItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    QuoteId = table.Column<int>(type: "integer", nullable: false),
+                    Discriminator = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    FlightNumber = table.Column<string>(type: "text", nullable: true),
+                    FlightName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Departure = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Arrival = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Price = table.Column<decimal>(type: "numeric(10,2)", nullable: true),
+                    HotelName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CheckInDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CheckOutDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    PricePerNight = table.Column<decimal>(type: "numeric(10,2)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuoteItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_QuoteItems_Quotes_QuoteId",
+                        column: x => x.QuoteId,
+                        principalTable: "Quotes",
+                        principalColumn: "QuoteId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuoteItems_QuoteId",
+                table: "QuoteItems",
+                column: "QuoteId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Quotes_AgencyId",
@@ -119,6 +148,9 @@ namespace Backend.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "QuoteItems");
+
             migrationBuilder.DropTable(
                 name: "Quotes");
 

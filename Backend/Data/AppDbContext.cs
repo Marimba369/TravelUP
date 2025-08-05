@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TravelUp.Models;
-using TravelUp.Models.Enum;
 
 namespace TravelUp.Data;
+
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -11,35 +11,18 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Agency> Agencies { get; set; }
-    public DbSet<Quote> Quotes { get; set; }
-    public DbSet<Request> Requests { get; set; }
-    public DbSet<Users> Users { get; set; }
+    // DbSets para todas as entidades principais da aplicação.
+    public DbSet<Users> Users { get; set; } = null!;
+    public DbSet<Request> Requests { get; set; } = null!;
+    public DbSet<Quote> Quotes { get; set; } = null!; // Quote re-adicionado ao DbContext
+    public DbSet<QuoteItem> QuoteItems { get; set; } = null!;
+    public DbSet<QuoteFlight> QuoteFlights { get; set; } = null!;
+    public DbSet<QuoteHotel> QuoteHotels { get; set; } = null!;
+    public DbSet<Agency> Agencies { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Relação 1:N - User -> Requests
-        modelBuilder.Entity<Users>()
-            .HasMany(u => u.Requests)
-            .WithOne(r => r.User)
-            .HasForeignKey(r => r.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Relação 1:N - Request -> Quotes
-        modelBuilder.Entity<Request>()
-            .HasMany(r => r.Quotes)
-            .WithOne(q => q.Request)
-            .HasForeignKey(q => q.RequestId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Relação 1:N - Agency -> Quotes
-        modelBuilder.Entity<Agency>()
-            .HasMany(a => a.Quotes)
-            .WithOne(q => q.Agency)
-            .HasForeignKey(q => q.AgencyId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // change DateTime properties to UTC 
+        // Altera todas as propriedades DateTime para UTC para garantir a consistência.
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties()
@@ -51,6 +34,36 @@ public class AppDbContext : DbContext
                 ));
             }
         }
+
+        // --- Configuração dos relacionamentos entre as entidades ---
+
+        // Um User pode ter muitas Requests.
+        modelBuilder.Entity<Request>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.Requests)
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Um Request pode ter muitos Quotes.
+        modelBuilder.Entity<Quote>()
+            .HasOne(q => q.Request)
+            .WithMany(r => r.Quotes)
+            .HasForeignKey(q => q.RequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Um Quote é associado a uma única Agency.
+        modelBuilder.Entity<Quote>()
+            .HasOne(q => q.Agency)
+            .WithMany(a => a.Quotes)
+            .HasForeignKey(q => q.AgencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Um Quote pode ter muitos QuoteItems (sejam eles voos ou hotéis).
+        modelBuilder.Entity<QuoteItem>()
+            .HasOne(qi => qi.Quote)
+            .WithMany(q => q.Items)
+            .HasForeignKey(qi => qi.QuoteId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.OnModelCreating(modelBuilder);
     }

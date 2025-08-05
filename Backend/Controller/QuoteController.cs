@@ -1,126 +1,192 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravelUp.Data;
-using TravelUp.DTOs;
 using TravelUp.Models;
+using TravelUp.DTOs;
 
-namespace TravelUp.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class QuoteController : ControllerBase
+namespace TravelUp.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public QuoteController(AppDbContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class QuoteController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    // GET: api/Quote
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<QuoteDto>>> GetQuotes()
-    {
-        return await _context.Quotes
-            .Include(q => q.Agency)
-            .Select(q => new QuoteDto
+        public QuoteController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// Obtém todos os orçamentos, incluindo os seus itens de voo e hotel, e os retorna como DTOs.
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<QuoteDto>>> GetQuotes()
+        {
+            var quotes = await _context.Quotes
+                .Include(q => q.Items)
+                .ToListAsync();
+
+            var result = quotes.Select(q => ToDto(q)).ToList();
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Obtém um orçamento específico pelo seu ID e o retorna como DTO.
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<QuoteDto>> GetQuote(int id)
+        {
+            var quote = await _context.Quotes
+                .Include(q => q.Items)
+                .FirstOrDefaultAsync(q => q.QuoteId == id);
+
+            if (quote == null)
+                return NotFound();
+
+            return Ok(ToDto(quote));
+        }
+
+        /// <summary>
+        /// Cria um novo orçamento com base nos itens de DTO fornecidos.
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<QuoteDto>> CreateQuote([FromBody] QuoteCreateDto quoteCreateDto)
+        {
+            if (!quoteCreateDto.Items.Any())
             {
-                QuoteId = q.QuoteId,
-                HotelName = q.HotelName,
-                FlightName = q.FlightName,
-                Cost = q.Cost,
-                RequestId = q.RequestId,
-                AgencyId = q.AgencyId,
-                AgencyName = q.Agency != null ? q.Agency.Name : null,
-                CheckInDate = q.CheckInDate,
-                CheckOutDate = q.CheckOutDate
-            }).ToListAsync();
-    }
+                return BadRequest("Nenhum item foi fornecido para criar um orçamento.");
+            }
 
-    // GET: api/Quote/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<QuoteDto>> GetQuote(int id)
-    {
-        var quote = await _context.Quotes
-            .Include(q => q.Agency)
-            .FirstOrDefaultAsync(q => q.QuoteId == id);
+            var request = await _context.Requests.FindAsync(quoteCreateDto.RequestId);
+            if (request == null)
+            {
+                return NotFound($"A solicitação com o ID {quoteCreateDto.RequestId} não foi encontrada.");
+            }
 
-        if (quote == null)
-            return NotFound();
+            var agency = await _context.Agencies.FindAsync(quoteCreateDto.AgencyId);
+            if (agency == null)
+            {
+                return NotFound($"A agência com o ID {quoteCreateDto.AgencyId} não foi encontrada.");
+            }
 
-        return new QuoteDto
+            var quote = new Quote
+            {
+                RequestId = quoteCreateDto.RequestId,
+                AgencyId = quoteCreateDto.AgencyId,
+                Items = new List<QuoteItem>()
+            };
+
+            foreach (var itemDto in quoteCreateDto.Items)
+            {
+                if (itemDto.Type.Equals("flight", StringComparison.OrdinalIgnoreCase))
+                {
+                    quote.Items.Add(new QuoteFlight
+                    {
+                        FlightNumber = itemDto.FlightNumber,
+                        FlightName = itemDto.FlightName,
+                        Departure = itemDto.Departure,
+                        Arrival = itemDto.Arrival,
+                        Price = itemDto.Price
+                    });
+                }
+                else if (itemDto.Type.Equals("hotel", StringComparison.OrdinalIgnoreCase))
+                {
+                    quote.Items.Add(new QuoteHotel
+                    {
+                        HotelName = itemDto.HotelName,
+                        CheckInDate = itemDto.CheckInDate,
+                        CheckOutDate = itemDto.CheckOutDate,
+                        PricePerNight = itemDto.PricePerNight
+                    });
+                }
+            }
+
+            _context.Quotes.Add(quote);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetQuote), new { id = quote.QuoteId }, ToDto(quote));
+        }
+
+        /// <summary>
+        /// Exclui um orçamento pelo seu ID.
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteQuote(int id)
         {
-            QuoteId = quote.QuoteId,
-            HotelName = quote.HotelName,
-            FlightName = quote.FlightName,
-            Cost = quote.Cost,
-            RequestId = quote.RequestId,
-            AgencyId = quote.AgencyId,
-            AgencyName = quote.Agency?.Name,
-            CheckInDate = quote.CheckInDate,
-            CheckOutDate = quote.CheckOutDate
-        };
-    }
+            var quote = await _context.Quotes.FindAsync(id);
+            if (quote == null)
+                return NotFound();
 
-    // POST: api/Quote
-    [HttpPost]
-    public async Task<ActionResult<QuoteDto>> PostQuote(QuoteDto dto)
-    {
-        var quote = new Quote
+            _context.Quotes.Remove(quote);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Obtém o custo total dos hotéis para um orçamento específico.
+        /// </summary>
+        [HttpGet("{id}/total-hotels")]
+        public async Task<ActionResult<object>> GetTotalHotels(int id)
         {
-            HotelName = dto.HotelName,
-            FlightName = dto.FlightName,
-            Cost = dto.Cost,
-            RequestId = dto.RequestId,
-            AgencyId = dto.AgencyId,
-            CheckInDate = dto.CheckInDate,
-            CheckOutDate = dto.CheckOutDate
-        };
+            var quote = await _context.Quotes
+                .Include(q => q.Items)
+                .FirstOrDefaultAsync(q => q.QuoteId == id);
 
-        _context.Quotes.Add(quote);
-        await _context.SaveChangesAsync();
+            if (quote == null)
+                return NotFound();
 
-        dto.QuoteId = quote.QuoteId;
+            var totalHotels = quote.Items
+                .OfType<QuoteHotel>()
+                .Sum(h => h.TotalPrice);
 
-        return CreatedAtAction(nameof(GetQuote), new { id = quote.QuoteId }, dto);
-    }
+            return Ok(new { totalHotels });
+        }
 
-    // PUT: api/Quote/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutQuote(int id, QuoteDto dto)
-    {
-        if (id != dto.QuoteId)
-            return BadRequest();
+        /// <summary>
+        /// Converte uma entidade Quote para um QuoteDto, incluindo a conversão dos itens.
+        /// </summary>
+        private QuoteDto ToDto(Quote quote)
+        {
+            var hotels = quote.Items.OfType<QuoteHotel>()
+                .Select(h => new QuoteHotelDto
+                {
+                    Id = h.Id,
+                    HotelName = h.HotelName ?? "",
+                    CheckInDate = h.CheckInDate,
+                    CheckOutDate = h.CheckOutDate,
+                    PricePerNight = h.PricePerNight,
+                    TotalPrice = h.TotalPrice
+                }).ToList();
 
-        var quote = await _context.Quotes.FindAsync(id);
-        if (quote == null)
-            return NotFound();
+            var flights = quote.Items.OfType<QuoteFlight>()
+                .Select(f => new QuoteFlightDto
+                {
+                    Id = f.Id,
+                    FlightNumber = f.FlightNumber ?? "",
+                    FlightName = f.FlightName ?? "",
+                    Departure = f.Departure ?? "",
+                    Arrival = f.Arrival ?? "",
+                    Price = f.Price
+                }).ToList();
 
-        quote.HotelName = dto.HotelName;
-        quote.FlightName = dto.FlightName;
-        quote.Cost = dto.Cost;
-        quote.RequestId = dto.RequestId;
-        quote.AgencyId = dto.AgencyId;
-        quote.CheckInDate = dto.CheckInDate;
-        quote.CheckOutDate = dto.CheckOutDate;
+            var totalQuote = hotels.Sum(h => h.TotalPrice) + flights.Sum(f => f.Price);
 
-        _context.Entry(quote).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    // DELETE: api/Quote/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteQuote(int id)
-    {
-        var quote = await _context.Quotes.FindAsync(id);
-        if (quote == null)
-            return NotFound();
-
-        _context.Quotes.Remove(quote);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+            return new QuoteDto
+            {
+                QuoteId = quote.QuoteId,
+                RequestId = quote.RequestId,
+                AgencyId = quote.AgencyId,
+                Hotels = hotels,
+                Flights = flights,
+                TotalQuote = totalQuote
+            };
+        }
     }
 }

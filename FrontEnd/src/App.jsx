@@ -5,6 +5,7 @@ import AddAgency from "./pages/AddAgency"
 import TravelRequest from "./pages/TravelRequest"
 import Home from "./pages/Home"
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Aprovar from "./pages/Aprovar"
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Navbar/>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/Aprovar" element={<Aprovar />} />
         <Route path="/TravelRequest" element={<TravelRequest />} />
         <Route path="/AddAgency" element={<AddAgency />} />
         <Route path="*" element={<p>Page not found</p>} />

@@ -55,23 +55,6 @@ namespace Backend.Migrations
                     b.Property<int>("AgencyId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CheckInDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CheckOutDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("Cost")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<string>("FlightName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("HotelName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<int>("RequestId")
                         .HasColumnType("integer");
 
@@ -82,6 +65,33 @@ namespace Backend.Migrations
                     b.HasIndex("RequestId");
 
                     b.ToTable("Quotes");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.QuoteItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
+
+                    b.Property<int>("QuoteId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuoteId");
+
+                    b.ToTable("QuoteItems");
+
+                    b.HasDiscriminator().HasValue("QuoteItem");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("TravelUp.Models.Request", b =>
@@ -112,11 +122,12 @@ namespace Backend.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
-                    b.Property<DateTime>("ReturnDate")
+                    b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("TravelDate")
                         .HasColumnType("timestamp with time zone");
@@ -157,12 +168,57 @@ namespace Backend.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("TravelUp.Models.QuoteFlight", b =>
+                {
+                    b.HasBaseType("TravelUp.Models.QuoteItem");
+
+                    b.Property<string>("Arrival")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Departure")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("FlightName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("FlightNumber")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasDiscriminator().HasValue("QuoteFlight");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.QuoteHotel", b =>
+                {
+                    b.HasBaseType("TravelUp.Models.QuoteItem");
+
+                    b.Property<DateTime>("CheckInDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CheckOutDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("HotelName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("PricePerNight")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasDiscriminator().HasValue("QuoteHotel");
+                });
+
             modelBuilder.Entity("TravelUp.Models.Quote", b =>
                 {
                     b.HasOne("TravelUp.Models.Agency", "Agency")
                         .WithMany("Quotes")
                         .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TravelUp.Models.Request", "Request")
@@ -176,12 +232,23 @@ namespace Backend.Migrations
                     b.Navigation("Request");
                 });
 
+            modelBuilder.Entity("TravelUp.Models.QuoteItem", b =>
+                {
+                    b.HasOne("TravelUp.Models.Quote", "Quote")
+                        .WithMany("Items")
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quote");
+                });
+
             modelBuilder.Entity("TravelUp.Models.Request", b =>
                 {
                     b.HasOne("TravelUp.Models.Users", "User")
                         .WithMany("Requests")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -190,6 +257,11 @@ namespace Backend.Migrations
             modelBuilder.Entity("TravelUp.Models.Agency", b =>
                 {
                     b.Navigation("Quotes");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.Quote", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("TravelUp.Models.Request", b =>

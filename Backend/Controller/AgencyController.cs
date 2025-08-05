@@ -17,63 +17,25 @@ namespace TravelUp.Controllers
             _context = context;
         }
 
-        // GET api/agency
-        [HttpGet]
-        public async Task<ActionResult<List<AgencyDto>>> GetAll()
-        {
-            var agencies = await _context.Agencies
-                .Include(a => a.Quotes)
-                .ToListAsync();
-
-            var agencyDtos = agencies.Select(a => new AgencyDto
-            {
-                AgencyId = a.AgencyId,
-                Name = a.Name,
-                ContactEmail = a.ContactEmail,
-                PhoneNumber = a.PhoneNumber,
-                Quotes = a.Quotes?.Select(q => new QuoteSummaryDto
-                {
-                    QuoteId = q.QuoteId,
-                    HotelName = q.HotelName,
-                    FlightName = q.FlightName,
-                    Cost = q.Cost,
-                    CheckInDate = q.CheckInDate,
-                    CheckOutDate = q.CheckOutDate
-                }).ToList()
-            }).ToList();
-
-            return Ok(agencyDtos);
-        }
-
-        // GET api/agency/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<AgencyDto>> GetById(int id)
         {
-            var agency = await _context.Agencies
-                .Include(a => a.Quotes)
-                .FirstOrDefaultAsync(a => a.AgencyId == id);
+            var agency = await _context.Agencies.FindAsync(id);
+            if (agency == null)
+                return NotFound();
 
-            if (agency == null) return NotFound();
-
-            var agencyDto = new AgencyDto
+            var dto = new AgencyDto
             {
                 AgencyId = agency.AgencyId,
                 Name = agency.Name,
                 ContactEmail = agency.ContactEmail,
                 PhoneNumber = agency.PhoneNumber,
-                Quotes = agency.Quotes?.Select(q => new QuoteSummaryDto
-                {
-                    QuoteId = q.QuoteId,
-                    HotelName = q.HotelName,
-                    FlightName = q.FlightName,
-                    Cost = q.Cost,
-                    CheckInDate = q.CheckInDate,
-                    CheckOutDate = q.CheckOutDate
-                }).ToList()
+                Quotes = null // ou preencher se quiser
             };
 
-            return Ok(agencyDto);
+            return Ok(dto);
         }
+
 
         // POST api/agency
         [HttpPost]
@@ -135,6 +97,26 @@ namespace TravelUp.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        
+        /// <summary>
+        /// Obtém uma lista de todas as agências.
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AgencyDto>>> GetAll()
+        {
+            var agencies = await _context.Agencies.ToListAsync();
+
+            var dtos = agencies.Select(agency => new AgencyDto
+            {
+                AgencyId = agency.AgencyId,
+                Name = agency.Name,
+                ContactEmail = agency.ContactEmail,
+                PhoneNumber = agency.PhoneNumber,
+                Quotes = null
+            }).ToList();
+
+            return Ok(dtos);
         }
     }
 }

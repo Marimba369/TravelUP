@@ -83,7 +83,7 @@ function AddAgency() {
               </svg>
             </div>
             <h2 className="card-title text-primary mb-2">Adicionar Agência</h2>
-            <p className="text-muted small">Preencha os campos abaixo para cadastrar uma nova agência</p>
+            
           </div>
           
           <form onSubmit={handleSubmit}>
