@@ -57,66 +57,68 @@ public class RequestController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = request.RequestId }, request);
     }
 
+    // Controllers/RequestController.cs
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         var request = await _context.Requests
             .Include(r => r.User)
             .Include(r => r.Quotes)
-            .Include(r => r.OriginCity)
-            .Include(r => r.DestinationCity)
+            .Include(r => r.OriginCity) // Inclua a cidade de origem
+            .Include(r => r.DestinationCity) // Inclua a cidade de destino
             .FirstOrDefaultAsync(r => r.RequestId == id);
 
         if (request == null)
             return NotFound();
 
-        return Ok(request);
+        // Mapeie o objeto Request para o DTO
+        var requestDto = new RequestDto
+        {
+            RequestId = request.RequestId,
+            Description = request.Description,
+            Status = request.Status,
+            TravelDate = request.TravelDate,
+            ReturnDate = request.ReturnDate,
+            IsRoundTrip = request.IsRoundTrip,
+            NeedHotel = request.NeedHotel,
+            OriginCityName = request.OriginCity.Name, // Use o nome aqui
+            DestinationCityName = request.DestinationCity.Name, // E aqui
+            UserId = request.UserId
+            // Copie as quotes se necessário ou crie um DTO para elas também
+        };
+
+        return Ok(requestDto);
     }
 
-    //GET
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var requests = await _context.Requests
             .Include(r => r.User)
             .Include(r => r.Quotes)
+            .Include(r => r.OriginCity)
+            .Include(r => r.DestinationCity)
             .ToListAsync();
 
-        return Ok(requests);
+        // Mapeie a lista de Requests para uma lista de RequestDto
+        var requestsDto = requests.Select(r => new RequestDto
+        {
+            RequestId = r.RequestId,
+            Description = r.Description,
+            Status = r.Status,
+            TravelDate = r.TravelDate,
+            ReturnDate = r.ReturnDate,
+            IsRoundTrip = r.IsRoundTrip,
+            NeedHotel = r.NeedHotel,
+            OriginCityName = r.OriginCity.Name,
+            DestinationCityName = r.DestinationCity.Name,
+            UserId = r.UserId
+        }).ToList();
+
+        return Ok(requestsDto);
     }
 
-    /// <summary>
-    /// Atualiza apenas o status de uma requisição.
-    /// </summary>
-    /// <param name="id">O ID da requisição.</param>
-    /// <param name="status">O novo status da requisição.</param>
-    [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateRequestStatus(int id, [FromBody] string status)
-    {
-        // 1. Valida se o status fornecido é um valor válido do enum RequestStatus
-        if (!Enum.TryParse<RequestStatus>(status, ignoreCase: true, out var parsedStatus) ||
-            !Enum.IsDefined(typeof(RequestStatus), parsedStatus))
-        {
-            return BadRequest("O status fornecido é inválido. Valores aceitos: Draft, Pending, Confirmed, Cancelled.");
-        }
 
-        // 2. Busca a requisição no banco de dados pelo ID
-        var existingRequest = await _context.Requests.FindAsync(id);
-
-        // 3. Se a requisição não for encontrada, retorna 404 Not Found
-        if (existingRequest == null)
-        {
-            return NotFound($"Requisição com o ID {id} não encontrada.");
-        }
-
-        // 4. Atualiza o status da requisição
-        existingRequest.Status = parsedStatus.ToString();
-
-        // 5. Salva as alterações no banco de dados
-        await _context.SaveChangesAsync();
-
-        // 6. Retorna uma resposta de sucesso, sem conteúdo
-        return NoContent();
-    }
 
 }
