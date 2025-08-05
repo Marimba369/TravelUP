@@ -49,6 +49,10 @@ namespace TravelUp.Models
 
         public Users? User { get; set; }
 
+        [ForeignKey("Project")]
+        public int? ProjectId { get; set; }
+        public Project? Project { get; set; }
+
         [JsonIgnore]
         public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     }

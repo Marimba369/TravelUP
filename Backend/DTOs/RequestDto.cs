@@ -13,6 +13,8 @@ public class RequestDto
     public string OriginCityName { get; set; } = null!;
     public string DestinationCityName { get; set; } = null!;
 
+     public ProjectDto? Project { get; set; }
+
     public int UserId { get; set; }
     public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
 

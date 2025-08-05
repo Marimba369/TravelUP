@@ -70,8 +70,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ADICIONE ESTA LINHA AQUI
+
 builder.Services.AddScoped<DataSeederService>();
+builder.Services.AddScoped<ProjectImportService>();
 
 var app = builder.Build();
 

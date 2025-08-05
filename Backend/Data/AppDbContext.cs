@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Country> Countries { get; set; }
     public DbSet<City> Cities { get; set; }
+     public DbSet<Project> Projects { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -47,6 +47,7 @@ public class RequestController : ControllerBase
             IsRoundTrip = dto.IsRoundTrip,
             NeedHotel = dto.NeedHotel,
             UserId = dto.UserId,
+            ProjectId = dto.ProjectId,
             OriginCityId = dto.OriginCityId,
             DestinationCityId = dto.DestinationCityId,
         };
@@ -57,8 +58,6 @@ public class RequestController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = request.RequestId }, request);
     }
 
-    // Controllers/RequestController.cs
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -67,6 +66,7 @@ public class RequestController : ControllerBase
             .Include(r => r.Quotes)
             .Include(r => r.OriginCity) // Inclua a cidade de origem
             .Include(r => r.DestinationCity) // Inclua a cidade de destino
+            .Include(r => r.Project)
             .FirstOrDefaultAsync(r => r.RequestId == id);
 
         if (request == null)
@@ -84,7 +84,8 @@ public class RequestController : ControllerBase
             NeedHotel = request.NeedHotel,
             OriginCityName = request.OriginCity.Name, // Use o nome aqui
             DestinationCityName = request.DestinationCity.Name, // E aqui
-            UserId = request.UserId
+            UserId = request.UserId,
+            Project = request.Project != null ? new ProjectDto { ProjectId = request.Project.ProjectId, Name = request.Project.Name } : null
             // Copie as quotes se necessário ou crie um DTO para elas também
         };
 

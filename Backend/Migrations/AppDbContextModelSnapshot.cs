@@ -52,11 +52,10 @@ namespace Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CountryId")
+                    b.Property<int?>("CountryId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -85,6 +84,28 @@ namespace Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Countries");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.Project", b =>
+                {
+                    b.Property<int>("ProjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("ProjectId");
+
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("TravelUp.Models.Quote", b =>
@@ -161,6 +182,9 @@ namespace Backend.Migrations
                     b.Property<int>("OriginCityId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -179,6 +203,8 @@ namespace Backend.Migrations
                     b.HasIndex("DestinationCityId");
 
                     b.HasIndex("OriginCityId");
+
+                    b.HasIndex("ProjectId");
 
                     b.HasIndex("UserId");
 
@@ -260,9 +286,7 @@ namespace Backend.Migrations
                 {
                     b.HasOne("TravelUp.Models.Country", "Country")
                         .WithMany("Cities")
-                        .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CountryId");
 
                     b.Navigation("Country");
                 });
@@ -311,6 +335,10 @@ namespace Backend.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TravelUp.Models.Project", "Project")
+                        .WithMany("Requests")
+                        .HasForeignKey("ProjectId");
+
                     b.HasOne("TravelUp.Models.Users", "User")
                         .WithMany("Requests")
                         .HasForeignKey("UserId")
@@ -320,6 +348,8 @@ namespace Backend.Migrations
                     b.Navigation("DestinationCity");
 
                     b.Navigation("OriginCity");
+
+                    b.Navigation("Project");
 
                     b.Navigation("User");
                 });
@@ -339,6 +369,11 @@ namespace Backend.Migrations
             modelBuilder.Entity("TravelUp.Models.Country", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("TravelUp.Models.Project", b =>
+                {
+                    b.Navigation("Requests");
                 });
 
             modelBuilder.Entity("TravelUp.Models.Quote", b =>
