@@ -87,7 +87,7 @@ public class RequestController : ControllerBase
 
         return Ok(requests);
     }
-    
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateRequest(int id, [FromBody] CreateRequestDto dto)
     {
@@ -133,6 +133,40 @@ public class RequestController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent(); // Ou Ok(existingRequest) se quiser retornar o objeto atualizado
+    }
+
+    /// <summary>
+    /// Atualiza apenas o status de uma requisição.
+    /// </summary>
+    /// <param name="id">O ID da requisição.</param>
+    /// <param name="status">O novo status da requisição.</param>
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateRequestStatus(int id, [FromBody] string status)
+    {
+        // 1. Valida se o status fornecido é um valor válido do enum RequestStatus
+        if (!Enum.TryParse<RequestStatus>(status, ignoreCase: true, out var parsedStatus) ||
+            !Enum.IsDefined(typeof(RequestStatus), parsedStatus))
+        {
+            return BadRequest("O status fornecido é inválido. Valores aceitos: Draft, Pending, Confirmed, Cancelled.");
+        }
+
+        // 2. Busca a requisição no banco de dados pelo ID
+        var existingRequest = await _context.Requests.FindAsync(id);
+
+        // 3. Se a requisição não for encontrada, retorna 404 Not Found
+        if (existingRequest == null)
+        {
+            return NotFound($"Requisição com o ID {id} não encontrada.");
+        }
+
+        // 4. Atualiza o status da requisição
+        existingRequest.Status = parsedStatus.ToString();
+
+        // 5. Salva as alterações no banco de dados
+        await _context.SaveChangesAsync();
+
+        // 6. Retorna uma resposta de sucesso, sem conteúdo
+        return NoContent();
     }
 
 }

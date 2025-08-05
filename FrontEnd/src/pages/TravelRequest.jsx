@@ -17,8 +17,8 @@ const StatusEnum = Object.freeze({
 });
 
 function TravelRequest() {
-  const [requestStatus, setRequestStatus] = useState(StatusEnum.WaitingForQuotes);
-  const [selectedAgencyId, setSelectedAgencyId] = useState("");
+  const [requestStatus, setRequestStatus] = useState(StatusEnum.Draft);
+  const [selectedAgencyName, setSelectedAgencyName] = useState("");
   const [agencyData, setAgencyData] = useState(null);
   const [agencies, setAgencies] = useState([]);
   const [showQuotes, setShowQuotes] = useState(false);
@@ -41,12 +41,13 @@ function TravelRequest() {
 
   // Estados para formulários de voos e hotéis
   const [newFlight, setNewFlight] = useState({
-    flightNumber: "",
-    departureAirport: "",
-    arrivalAirport: "",
-    departureDate: "",
-    arrivalDate: "",
-    price: ""
+      flightNumber: "",
+      flightName: "",
+      departure: "",
+      arrivalDate: "",
+      departureDate: "",
+      arrival: "",
+      price: ""
   });
 
   const [newHotel, setNewHotel] = useState({
@@ -85,14 +86,14 @@ function TravelRequest() {
 
   // Buscar detalhes da agência selecionada
   useEffect(() => {
-    if (!selectedAgencyId) {
+    if (!selectedAgencyName) {
       setAgencyData(null);
       return;
     }
 
     const fetchAgencyDetails = async () => {
       try {
-        const matchedAgency = agencies.find((agency) => agency.name === selectedAgencyId);
+        const matchedAgency = agencies.find((agency) => agency.name === selectedAgencyName);
         const agencyId = matchedAgency ? matchedAgency.agencyId : null;
 
         const response = await api.get(`/Agency/${agencyId}`);
@@ -103,7 +104,7 @@ function TravelRequest() {
     };
 
     fetchAgencyDetails();
-  }, [selectedAgencyId, agencies]);
+  }, [selectedAgencyName, agencies]);
 
   // Manipuladores
   const handleChange = (e) => {
@@ -122,17 +123,19 @@ function TravelRequest() {
       return;
     }
 
-    formData.returnDate = (!formData.isRoundTrip) ? null : formData.returnDate;
-    formData.status = requestStatus;
-
     try {
+      formData.returnDate = (!formData.isRoundTrip) ? null : formData.returnDate;
+      formData.status = requestStatus;
+
       const requestData = {
         ...formData,
         userId: 1,
       };
       
       const response = await createTravelRequest(requestData);
-      setTravelRequestId(response.id);
+      const requestId = response.data.requestId;
+      setTravelRequestId(requestId);
+
       setMessage("Pedido de viagem enviado com sucesso!");
       setRequestStatus(StatusEnum.Submitted);
     } catch (error) {
@@ -170,7 +173,7 @@ function TravelRequest() {
       status: ""
     });
     setMessage('');
-    setSelectedAgencyId("");
+    setSelectedAgencyName("");
     setAgencyData(null);
     setShowQuotes(false);
     setRequestStatus(StatusEnum.Draft);
@@ -183,8 +186,7 @@ function TravelRequest() {
 
   // Adicionar um novo voo
   const addFlight = () => {
-    if (!newFlight.flightNumber || !newFlight.departureAirport || !newFlight.arrivalAirport || 
-        !newFlight.departureDate || !newFlight.arrivalDate || !newFlight.price) {
+    if (!newFlight.flightNumber || !newFlight.departure || !newFlight.arrival || !newFlight.price || !newFlight.flightName) {
       setMessage("Preencha todos os campos do voo.");
       return;
     }
@@ -199,8 +201,9 @@ function TravelRequest() {
     
     setNewFlight({
       flightNumber: "",
-      departureAirport: "",
-      arrivalAirport: "",
+      flightName: "",
+      departure: "",
+      arrival: "",
       departureDate: "",
       arrivalDate: "",
       price: ""
@@ -245,8 +248,8 @@ function TravelRequest() {
   // Função para buscar o custo total do backend
   const fetchTotalCost = async (quoteId) => {
     try {
-      const response = await api.get(`/Quote/${quoteId}/total-cost`);
-      setTotalCost(response.data.totalCost);
+      const response = await api.get(`/Quote/${quoteId}/total`);
+      setTotalCost(response.data.totalQuote);
     } catch (error) {
       console.error("Erro ao buscar custo total:", error);
     }
@@ -264,9 +267,10 @@ function TravelRequest() {
         return;
       }
 
+      const agencyCurrentId = agencyData.agencyId;
+
       const quoteData = {
-        agencyId: selectedAgencyId,
-        agencyName: agencyData?.name || selectedAgencyId,
+        agencyId: agencyCurrentId,
         requestId: travelRequestId,
         items: [
           ...flights,
@@ -275,12 +279,14 @@ function TravelRequest() {
       };
 
       const response = await api.post('/Quote', quoteData);
-      const quoteId = response.data.id;
+      const quoteId = response.data.quoteId;
       
       await fetchTotalCost(quoteId);
+      setMessage("Cotação enviada com sucesso!");
 
-      setMessage("Cotação enviada com sucesso! Custo total: €" + totalCost.toFixed(2));
       setRequestStatus(StatusEnum.Pending);
+      await api.put(`/request/${travelRequestId}/status`, requestStatus);
+
       setFlights([]);
       setHotels([]);
       setShowQuotes(false);
@@ -301,21 +307,21 @@ function TravelRequest() {
     switch (requestStatus) {
       case StatusEnum.Draft:
         return {
-          text: "Em Preenchimento",
+          text: "Em Preenchimento", //draft
           badgeClass: "bg-info",
           progress: 33,
           description: "Preencha todos os campos obrigatórios"
         };
       case StatusEnum.Submitted:
         return {
-          text: "Aguardando Cotação",
+          text: "Aguardando Cotação", //submited
           badgeClass: "bg-warning",
           progress: 66,
           description: "Selecione uma agência para adicionar cotações"
         };
       case StatusEnum.Pending:
         return {
-          text: "Pendente de Cotação",
+          text: "Pendente de Cotação", //waiting4selection
           badgeClass: "bg-primary",
           progress: 100,
           description: "Sua cotação foi enviada e está pendente de aprovação"
@@ -498,8 +504,8 @@ function TravelRequest() {
                 <div className="col-md-8">
                   <select
                     className="form-select form-select-sm"
-                    value={selectedAgencyId}
-                    onChange={(e) => setSelectedAgencyId(e.target.value)}
+                    value={selectedAgencyName}
+                    onChange={(e) => setSelectedAgencyName(e.target.value)}
                   >
                     <option value="">Selecione uma agência</option>
                     {agencies.map((agency) => (
@@ -514,7 +520,7 @@ function TravelRequest() {
                   <button
                     className="btn btn-success btn-sm w-100"
                     onClick={() => setShowQuotes(true)}
-                    disabled={!selectedAgencyId}
+                    disabled={!selectedAgencyName}
                   >
                     Adicionar Cotação
                   </button>
@@ -555,6 +561,18 @@ function TravelRequest() {
                     </div>
 
                     <div className="col-md-6">
+                      <label className="form-label small fw-bold">Nome do Voo *</label>
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        name="flightName"
+                        value={newFlight.flightName}
+                        onChange={handleFlightChange}
+                        placeholder="Ex: TAP"
+                      />
+                    </div>
+
+                    <div className="col-md-6">
                       <label className="form-label small fw-bold">Preço (€) *</label>
                       <input
                         type="number"
@@ -571,8 +589,8 @@ function TravelRequest() {
                       <input
                         type="text"
                         className="form-control form-control-sm"
-                        name="departureAirport"
-                        value={newFlight.departureAirport}
+                        name="departure"
+                        value={newFlight.departure}
                         onChange={handleFlightChange}
                         placeholder="Ex: Lisbon Airport"
                       />
@@ -583,8 +601,8 @@ function TravelRequest() {
                       <input
                         type="text"
                         className="form-control form-control-sm"
-                        name="arrivalAirport"
-                        value={newFlight.arrivalAirport}
+                        name="arrival"
+                        value={newFlight.arrival}
                         onChange={handleFlightChange}
                         placeholder="Ex: Paris Airport"
                       />

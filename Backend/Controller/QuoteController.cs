@@ -188,5 +188,39 @@ namespace TravelUp.Controllers
                 TotalQuote = totalQuote
             };
         }
+
+        /// <summary>
+        /// Obtém o custo total de uma quota específica, somando hotéis e voos.
+        /// </summary>
+        [HttpGet("{id}/total")]
+        public async Task<ActionResult<object>> GetTotalQuote(int id)
+        {
+            // 1. Busca o orçamento pelo ID, incluindo todos os seus itens
+            var quote = await _context.Quotes
+                .Include(q => q.Items)
+                .FirstOrDefaultAsync(q => q.QuoteId == id);
+
+            // 2. Verifica se o orçamento existe
+            if (quote == null)
+            {
+                return NotFound($"Orçamento com ID {id} não encontrado.");
+            }
+
+            // 3. Calcula a soma total dos hotéis
+            var totalHotels = quote.Items
+                .OfType<QuoteHotel>()
+                .Sum(h => h.TotalPrice);
+
+            // 4. Calcula a soma total dos voos
+            var totalFlights = quote.Items
+                .OfType<QuoteFlight>()
+                .Sum(f => f.Price);
+
+            // 5. Soma os totais para obter o valor final
+            var totalQuote = totalHotels + totalFlights;
+
+            // 6. Retorna o resultado
+            return Ok(new { totalQuote });
+        }
     }
 }
