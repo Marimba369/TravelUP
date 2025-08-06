@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createTravelRequest } from "../services/api";
 import api from "../services/api";
 import "../style/TravelRequest.css";
+import ComboBox from '../components/ComboBox'; // Certifique-se de que o caminho está correto
 
 const StatusEnum = Object.freeze({
   Draft: "draft",
@@ -33,13 +34,19 @@ function TravelRequest() {
     returnDate: "",
     isRoundTrip: false,
     needHotel: false,
-    origin: "",
-    destination: "",
     userId: "",
-    status: ""
+    status: "",
+    projectId: null,
+    originCityId: null,
+    destinationCityId: null
   });
 
-  // Estados para formulários de voos e hotéis
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedOriginCountry, setSelectedOriginCountry] = useState(null);
+  const [selectedOriginCity, setSelectedOriginCity] = useState(null);
+  const [selectedDestinationCountry, setSelectedDestinationCountry] = useState(null);
+  const [selectedDestinationCity, setSelectedDestinationCity] = useState(null);
+
   const [newFlight, setNewFlight] = useState({
       flightNumber: "",
       flightName: "",
@@ -61,10 +68,21 @@ function TravelRequest() {
   const [flights, setFlights] = useState([]);
   const [hotels, setHotels] = useState([]);
 
+  // Use useMemo para criar objetos de dependências estáveis para as Cidades
+  const originCityDependencies = useMemo(() => ({
+    countryName: selectedOriginCountry?.name
+  }), [selectedOriginCountry?.name]);
+
+  const destinationCityDependencies = useMemo(() => ({
+    countryName: selectedDestinationCountry?.name
+  }), [selectedDestinationCountry?.name]);
+
   // Calcular total de forma reativa
   useEffect(() => {
-    const flightsTotal = flights.reduce((sum, flight) => sum + flight.price, 0);
-    const hotelsTotal = hotels.reduce((sum, hotel) => sum + (hotel.pricePerNight || 0), 0);
+    const flightsTotal = flights.reduce((sum, flight) => sum + 
+flight.price, 0);
+    const hotelsTotal = hotels.reduce((sum, hotel) => sum + 
+(hotel.pricePerNight || 0), 0);
     setQuoteTotal(flightsTotal + hotelsTotal);
   }, [flights, hotels]);
 
@@ -93,13 +111,18 @@ function TravelRequest() {
 
     const fetchAgencyDetails = async () => {
       try {
-        const matchedAgency = agencies.find((agency) => agency.name === selectedAgencyName);
+        const matchedAgency = agencies.find((agency) => agency.agencyId == selectedAgencyName); // Comparar por ID
         const agencyId = matchedAgency ? matchedAgency.agencyId : null;
 
-        const response = await api.get(`/Agency/${agencyId}`);
-        setAgencyData(response.data);
+        if (agencyId) { // Só faz a requisição se o agencyId for válido
+            const response = await api.get(`/Agency/${agencyId}`);
+            setAgencyData(response.data);
+        } else {
+            setAgencyData(null); // Limpa se não encontrar
+        }
       } catch (error) {
         console.error("Erro ao buscar dados da agência", error);
+        setAgencyData(null);
       }
     };
 
@@ -109,10 +132,10 @@ function TravelRequest() {
   // Manipuladores
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({ // Usar a função de atualização para garantir o estado mais recente
+      ...prev,
       [name]: type === "checkbox" ? checked : value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -123,13 +146,27 @@ function TravelRequest() {
       return;
     }
 
-    try {
-      formData.returnDate = (!formData.isRoundTrip) ? null : formData.returnDate;
-      formData.status = requestStatus;
+    // Validação de cidades
+    if (!selectedOriginCity || !selectedDestinationCity) {
+      setMessage("Por favor, selecione as cidades de origem e destino.");
+      return;
+    }
 
+    try {
+      // O status será definido antes de enviar, não no estado do formData
+      const currentStatus = requestStatus; // Captura o status atual antes de qualquer mudança
+      
       const requestData = {
-        ...formData,
-        userId: 1,
+        description: formData.description,
+        travelDate: formData.travelDate,
+        returnDate: formData.isRoundTrip ? formData.returnDate : null,
+        isRoundTrip: formData.isRoundTrip,
+        needHotel: formData.needHotel,
+        userId: 1, // Assumindo userId fixo por enquanto
+        status: currentStatus, // Usa o status atual
+        projectId: selectedProject ? selectedProject.id : null,
+        originCityId: selectedOriginCity.id,
+        destinationCityId: selectedDestinationCity.id
       };
       
       const response = await createTravelRequest(requestData);
@@ -137,7 +174,7 @@ function TravelRequest() {
       setTravelRequestId(requestId);
 
       setMessage("Pedido de viagem enviado com sucesso!");
-      setRequestStatus(StatusEnum.Submitted);
+      setRequestStatus(StatusEnum.Submitted); // Atualiza o status após o sucesso
     } catch (error) {
       let errorMessage = "Erro ao enviar o pedido.";
       
@@ -167,10 +204,11 @@ function TravelRequest() {
       returnDate: "",
       isRoundTrip: false,
       needHotel: false,
-      origin: "",
-      destination: "",
       userId: "",
-      status: ""
+      status: "",
+      projectId: null,
+      originCityId: null,
+      destinationCityId: null
     });
     setMessage('');
     setSelectedAgencyName("");
@@ -182,11 +220,19 @@ function TravelRequest() {
     setTotalCost(0);
     setQuoteTotal(0);
     setTravelRequestId(null);
+
+    // Limpar os estados de seleção dos ComboBoxes
+    setSelectedProject(null);
+    setSelectedOriginCountry(null);
+    setSelectedOriginCity(null);
+    setSelectedDestinationCountry(null);
+    setSelectedDestinationCity(null);
   };
 
   // Adicionar um novo voo
   const addFlight = () => {
-    if (!newFlight.flightNumber || !newFlight.departure || !newFlight.arrival || !newFlight.price || !newFlight.flightName) {
+    if (!newFlight.flightNumber || !newFlight.departure || 
+!newFlight.arrival || !newFlight.price || !newFlight.flightName || !newFlight.departureDate || !newFlight.arrivalDate) {
       setMessage("Preencha todos os campos do voo.");
       return;
     }
@@ -212,9 +258,10 @@ function TravelRequest() {
 
   // Adicionar um novo hotel (só se needHotel for true)
   const addHotel = () => {
-    if (!formData.needHotel) return; // Não adicionar se não precisa de hotel
+    if (!formData.needHotel) return;
     
-    if (!newHotel.hotelName || !newHotel.checkInDate || !newHotel.checkOutDate || !newHotel.pricePerNight) {
+    if (!newHotel.hotelName || !newHotel.checkInDate || 
+!newHotel.checkOutDate || !newHotel.pricePerNight) {
       setMessage("Preencha todos os campos do hotel.");
       return;
     }
@@ -285,7 +332,8 @@ function TravelRequest() {
       setMessage("Cotação enviada com sucesso!");
 
       setRequestStatus(StatusEnum.Pending);
-      await api.put(`/request/${travelRequestId}/status`, requestStatus);
+      // O status enviado para o backend deve ser o valor da string, não o enum
+      await api.put(`/request/${travelRequestId}/status`, StatusEnum.Pending); 
 
       setFlights([]);
       setHotels([]);
@@ -307,21 +355,21 @@ function TravelRequest() {
     switch (requestStatus) {
       case StatusEnum.Draft:
         return {
-          text: "Em Preenchimento", //draft
+          text: "Em Preenchimento",
           badgeClass: "bg-info",
           progress: 33,
           description: "Preencha todos os campos obrigatórios"
         };
       case StatusEnum.Submitted:
         return {
-          text: "Aguardando Cotação", //submited
+          text: "Aguardando Cotação",
           badgeClass: "bg-warning",
           progress: 66,
           description: "Selecione uma agência para adicionar cotações"
         };
       case StatusEnum.Pending:
         return {
-          text: "Pendente de Cotação", //waiting4selection
+          text: "Pendente de Cotação",
           badgeClass: "bg-primary",
           progress: 100,
           description: "Sua cotação foi enviada e está pendente de aprovação"
@@ -365,7 +413,7 @@ function TravelRequest() {
           {/* Exibir mensagem */}
           {message && (
             <div className={`alert ${
-              requestStatus === StatusEnum.Submitted ? 'alert-success' : 
+              requestStatus === StatusEnum.Submitted ? 'alert-success' :
               requestStatus === StatusEnum.Pending ? 'alert-info' : 
               'alert-info'
             } mb-3 py-2`}>
@@ -377,32 +425,81 @@ function TravelRequest() {
           {requestStatus !== StatusEnum.Pending && (
             <form onSubmit={handleSubmit}>
               <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label small fw-bold">Origem *</label>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    name="origin"
-                    placeholder="Cidade de origem"
-                    value={formData.origin}
-                    onChange={handleChange}
-                    required
+                {/* Campo de Seleção de Projeto */}
+                <div className="col-12">
+                  <label className="form-label small fw-bold">Projeto (Opcional)</label>
+                  <ComboBox
+                    fetchUrl="/Project"
+                    placeholder="Selecione um projeto..."
+                    onSelect={setSelectedProject}
+                    initialValue={selectedProject ? selectedProject.name : ""}
                     disabled={requestStatus !== StatusEnum.Draft}
                   />
+                  {selectedProject && (
+                    <div className="form-text mt-1">Projeto selecionado: {selectedProject.name}</div>
+                  )}
                 </div>
 
+                {/* ComboBox para País de Origem */}
                 <div className="col-md-6">
-                  <label className="form-label small fw-bold">Destino *</label>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    name="destination"
-                    placeholder="Cidade de destino"
-                    value={formData.destination}
-                    onChange={handleChange}
-                    required
+                  <label className="form-label small fw-bold">País de Origem *</label>
+                  <ComboBox
+                    fetchUrl="/Locations/countries"
+                    placeholder="Digite o nome do país de origem..."
+                    onSelect={setSelectedOriginCountry}
+                    initialValue={selectedOriginCountry ? selectedOriginCountry.name : ""}
                     disabled={requestStatus !== StatusEnum.Draft}
                   />
+                  {selectedOriginCountry && (
+                    <div className="form-text mt-1">País selecionado: {selectedOriginCountry.name}</div>
+                  )}
+                </div>
+
+                {/* ComboBox para Cidade de Origem (dependente do País de Origem) */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold">Cidade de Origem *</label>
+                  <ComboBox
+                    fetchUrl={selectedOriginCountry ? `/Locations/cities-by-country/${selectedOriginCountry.name}` : ""}
+                    placeholder="Digite o nome da cidade de origem..."
+                    onSelect={setSelectedOriginCity}
+                    initialValue={selectedOriginCity ? selectedOriginCity.name : ""}
+                    disabled={requestStatus !== StatusEnum.Draft || !selectedOriginCountry}
+                    dependencies={originCityDependencies}
+                  />
+                  {selectedOriginCity && (
+                    <div className="form-text mt-1">Cidade selecionada: {selectedOriginCity.name}</div>
+                  )}
+                </div>
+
+                {/* ComboBox para País de Destino */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold">País de Destino *</label>
+                  <ComboBox
+                    fetchUrl="/Locations/countries"
+                    placeholder="Digite o nome do país de destino..."
+                    onSelect={setSelectedDestinationCountry}
+                    initialValue={selectedDestinationCountry ? selectedDestinationCountry.name : ""}
+                    disabled={requestStatus !== StatusEnum.Draft}
+                  />
+                  {selectedDestinationCountry && (
+                    <div className="form-text mt-1">País selecionado: {selectedDestinationCountry.name}</div>
+                  )}
+                </div>
+
+                {/* ComboBox para Cidade de Destino (dependente do País de Destino) */}
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold">Cidade de Destino *</label>
+                  <ComboBox
+                    fetchUrl={selectedDestinationCountry ? `/Locations/cities-by-country/${selectedDestinationCountry.name}` : ""}
+                    placeholder="Digite o nome da cidade de destino..."
+                    onSelect={setSelectedDestinationCity}
+                    initialValue={selectedDestinationCity ? selectedDestinationCity.name : ""}
+                    disabled={requestStatus !== StatusEnum.Draft || !selectedDestinationCountry}
+                    dependencies={destinationCityDependencies}
+                  />
+                  {selectedDestinationCity && (
+                    <div className="form-text mt-1">Cidade selecionada: {selectedDestinationCity.name}</div>
+                  )}
                 </div>
 
                 <div className="col-md-6">
@@ -509,7 +606,7 @@ function TravelRequest() {
                   >
                     <option value="">Selecione uma agência</option>
                     {agencies.map((agency) => (
-                      <option key={agency.id} value={agency.id}>
+                      <option key={agency.agencyId} value={agency.agencyId}>
                         {agency.name}
                       </option>
                     ))}
@@ -734,11 +831,11 @@ function TravelRequest() {
                           <tr key={index}>
                             <td>{flight.flightNumber}</td>
                             <td>
-                              {flight.departureAirport}<br />
+                              {flight.departure}<br />
                               <small>{new Date(flight.departureDate).toLocaleString()}</small>
                             </td>
                             <td>
-                              {flight.arrivalAirport}<br />
+                              {flight.arrival}<br />
                               <small>{new Date(flight.arrivalDate).toLocaleString()}</small>
                             </td>
                             <td>€{flight.price.toFixed(2)}</td>
