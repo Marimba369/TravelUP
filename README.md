@@ -17,7 +17,7 @@ As a developer, I want to adapt existing screens to use city and country data fr
 
 - User Stories:
 As a manager, Mary wants to create, edit, and import projects for travelers to use when creating requests, 
-so that project data is managed effectively. Add a projects table to the database and update screens accordingly.
+so that project data is managed effectively. Add a projects table to the database and update screens accordingly.(X)
 
 - User Stories:
 As a facilitator, Frank wants to view submitted or ongoing travel requests prioritized by due date, so that he can efficiently manage urgent requests.

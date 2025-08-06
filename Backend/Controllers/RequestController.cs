@@ -100,6 +100,7 @@ public class RequestController : ControllerBase
             .Include(r => r.Quotes)
             .Include(r => r.OriginCity)
             .Include(r => r.DestinationCity)
+            .Include(r => r.Project) // Adicionado: Inclui os dados do projeto
             .ToListAsync();
 
         // Mapeie a lista de Requests para uma lista de RequestDto
@@ -114,12 +115,17 @@ public class RequestController : ControllerBase
             NeedHotel = r.NeedHotel,
             OriginCityName = r.OriginCity.Name,
             DestinationCityName = r.DestinationCity.Name,
+
+            // Mapeamento atualizado para incluir o projeto
+            Project = r.Project != null ? new ProjectDto
+            {
+                ProjectId = r.Project.ProjectId,
+                Name = r.Project.Name
+            } : null,
+
             UserId = r.UserId
         }).ToList();
 
         return Ok(requestsDto);
     }
-
-
-
 }

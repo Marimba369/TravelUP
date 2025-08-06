@@ -17,9 +17,16 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet("countries")]
-    public async Task<IActionResult> GetCountries()
+    public async Task<IActionResult> GetCountries([FromQuery] string? q)
     {
-        var countries = await _context.Countries.ToListAsync();
+        var countriesQuery = _context.Countries.AsQueryable();
+
+        if (!string.IsNullOrEmpty(q))
+        {
+            countriesQuery = countriesQuery.Where(c => c.Name.ToLower().Contains(q.ToLower()));
+        }
+
+        var countries = await countriesQuery.ToListAsync();
         return Ok(countries);
     }
 
@@ -28,6 +35,44 @@ public class LocationsController : ControllerBase
     {
         var cities = await _context.Cities
             .Include(c => c.Country)
+            .Select(c => new CityDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Country = new CountryDto
+                {
+                    Id = c.Country.Id,
+                    Name = c.Country.Name,
+                    Code = c.Country.Code
+                }
+            })
+            .ToListAsync();
+
+        return Ok(cities);
+    }
+
+    [HttpGet("cities-by-country/{countryName}")]
+    public async Task<IActionResult> GetCitiesByCountryName(string countryName, [FromQuery] string? q) 
+    {
+        var country = await _context.Countries
+            .FirstOrDefaultAsync(c => c.Name.ToLower() == countryName.ToLower());
+
+        if (country == null)
+        {
+            return NotFound($"País '{countryName}' não encontrado.");
+        }
+
+        var citiesQuery = _context.Cities
+            .Where(c => c.CountryId == country.Id)
+            .AsQueryable(); // Converte para IQueryable para aplicar filtros
+
+        // Adiciona o filtro pelo nome da cidade se 'q' for fornecido
+        if (!string.IsNullOrEmpty(q))
+        {
+            citiesQuery = citiesQuery.Where(c => c.Name.ToLower().Contains(q.ToLower()));
+        }
+
+        var cities = await citiesQuery
             .Select(c => new CityDto
             {
                 Id = c.Id,

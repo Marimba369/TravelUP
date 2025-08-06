@@ -28,7 +28,7 @@ public class CreateRequestDto
 
     [Required(ErrorMessage = "O ID da cidade de destino é obrigatório.")]
     public int DestinationCityId { get; set; }
-
+    [Required]
     public int? ProjectId { get; set; }
 
     [Required]

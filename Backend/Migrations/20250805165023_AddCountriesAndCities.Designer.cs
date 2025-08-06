@@ -12,7 +12,7 @@ using TravelUp.Data;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250805155525_AddCountriesAndCities")]
+    [Migration("20250805165023_AddCountriesAndCities")]
     partial class AddCountriesAndCities
     {
         /// <inheritdoc />
