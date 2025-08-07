@@ -11,23 +11,25 @@ import ValidateRoles from "./components/ValidateRoles"
 import Login from "./components/Login"
 import AuthProvider from "./components/AuthProvider"
 import Agencies from "./pages/Facilitator/Agencies"
-import PendingRequests from "./pages/Facilitator/PendingRequests"
+// import PendingRequests from "./pages/Facilitator/PendingRequests"
+// import FacilitatorQuote from "./pages/FacilitatorQuote"
 
 function App() {
   return (
     <>
     <AuthProvider>
-      <Navbar/>
-      <Routes>
+      <Route path="/login" element={<Login />} />
+      
+      <Routes path="/" element ={<Navbar />}>
         <Route path="/" element={<Home />} />
         <Route path="/Project" element={<Project />} />
         <Route path="/HomeFacilitator" element={<ValidateRoles allowedRoles ={['Facilitator']}><HomeFacilitator/> </ValidateRoles>}/>
-        <Route path="/login" element={<Login />} />
-        <Route path="/facilitator/requests" element={<PendingRequests />} />
+        {/*<Route path="/facilitator/requests" element={<PendingRequests />} />*/}
         <Route path="/HomeManager" element={<HomeManager />} />
         <Route path="/TravelRequest" element={<ValidateRoles allowedRoles ={['Facilitator']}><TravelRequest /> </ValidateRoles>}/>
         <Route path="/Agency" element={<ValidateRoles allowedRoles ={['Facilitator']}><Agencies /> </ValidateRoles>}/>
         <Route path="*" element={<p>Page not found</p>} />
+        {/*<Route path="/facilitator/:requestId" element={<FacilitatorQuote />} />*/}
       </Routes>
     </AuthProvider>
     </>

@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import api from "../services/api";
+import api from "../../services/api";
 import "../style/TravelRequest.css";
 
 const Status = Object.freeze({
-    Draft : "draft",
-    Submitted : "submitted",
-    WaitingForQuotes : "waitingForQuotes",
-    QuotesAvailable : "quotesAvailable",
-    QuoteSelected : "quoteSelected",
-    WaitingForApproval : "waitingForApproval",
-    Approved : "approved",
-    Rejected : "rejected",
-    Pending : "pending",
-    Cancelled : "cancelled"
-  })
-  
+  Draft : "draft",
+  Submitted : "submitted",
+  WaitingForQuotes : "waitingForQuotes",
+  QuotesAvailable : "quotesAvailable",
+  QuoteSelected : "quoteSelected",
+  WaitingForApproval : "waitingForApproval",
+  Approved : "approved",
+  Rejected : "rejected",
+  Pending : "pending",
+  Cancelled : "cancelled"
+})
+
 function FacilitatorQuote({ requestId }) {
   const [selectedAgencyName, setSelectedAgencyName] = useState("");
   const [agencyData, setAgencyData] = useState(null);
