@@ -1,0 +1,172 @@
+/* Estilos gerais para o corpo da página */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+  }
+  
+  /* Estilos do container principal */
+  .printable-dashboard-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Título do dashboard */
+  .dashboard-title {
+    color: #0d6efd;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  
+  /* Estilos da tabela */
+  .dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-table th,
+  .dashboard-table td {
+    border: 1px solid #dee2e6;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 0.9rem;
+  }
+  
+  .dashboard-table th {
+    background-color: #e9ecef;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .dashboard-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+  
+  /* Estilos para o link da requisição */
+  .request-link {
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .request-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* Estilos para os ícones de aprovar/rejeitar e alerta */
+  .action-icon {
+    font-size: 1.2rem;
+    vertical-align: middle;
+    margin: 0 5px;
+  }
+  
+  .approve-icon {
+    color: #28a745; /* Verde */
+  }
+  
+  .reject-icon {
+    color: #dc3545; /* Vermelho */
+  }
+  
+  .alert-icon {
+    color: #ffc107; /* Amarelo */
+    font-size: 1.1rem;
+  }
+  
+  /* Tooltip (simplificado para impressão) */
+  .tooltip-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 5px;
+  }
+  
+  /* Botão de impressão */
+  .print-button-container {
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  .print-button {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .print-button:hover {
+    background-color: #0b5ed7;
+  }
+  
+  /* ========================================= */
+  /* ESTILOS ESPECÍFICOS PARA IMPRESSÃO */
+  /* ========================================= */
+  @media print {
+    /* Esconde o botão de impressão */
+    .print-button-container {
+      display: none;
+    }
+  
+    /* Remove sombras e fundos desnecessários */
+    .printable-dashboard-container {
+      box-shadow: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+  
+    /* Otimiza a tabela para impressão */
+    .dashboard-table {
+      border: 1px solid #000; /* Borda mais forte para impressão */
+      page-break-inside: auto; /* Permite quebras de página dentro da tabela */
+    }
+  
+    .dashboard-table tr {
+      page-break-inside: avoid; /* Evita quebras de página dentro de linhas */
+      page-break-after: auto;
+    }
+  
+    .dashboard-table th,
+    .dashboard-table td {
+      border: 1px solid #ccc; /* Bordas mais claras para células */
+      padding: 8px 10px;
+    }
+  
+    .dashboard-table th {
+      background-color: #f0f0f0; /* Fundo cinza claro para cabeçalhos */
+      -webkit-print-color-adjust: exact; /* Garante que as cores de fundo sejam impressas */
+      color-adjust: exact;
+    }
+  
+    /* Garante que o texto do tooltip seja visível se hover não funcionar */
+    .tooltip-text {
+      display: block !important; /* Força a exibição se estiver oculto por padrão */
+      margin-top: 5px;
+      font-size: 0.75rem;
+      color: #333;
+    }
+  
+    /* Ajustes de fonte para legibilidade na impressão */
+    body {
+      font-size: 12pt;
+    }
+    .dashboard-title {
+      font-size: 18pt;
+    }
+    .dashboard-table th, .dashboard-table td {
+      font-size: 10pt;
+    }
+  }

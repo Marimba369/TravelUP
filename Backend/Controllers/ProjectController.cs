@@ -32,17 +32,35 @@ public class ProjectController : ControllerBase
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetProjectById), new { id = project.ProjectId }, project);
     }
-    
-    /// <summary>
-    /// Obtém a lista de todos os projetos.
-    /// </summary>
+
     [HttpGet]
-    public async Task<IActionResult> GetAllProjects()
+    public async Task<IActionResult> GetAllProjects([FromQuery] string? q)
     {
-        var projects = await _context.Projects.ToListAsync();
-        return Ok(projects);
+        const int MAX_RESULTS = 20; // Define o limite máximo de resultados
+
+        var projectsQuery = _context.Projects.AsQueryable();
+
+        if (!string.IsNullOrEmpty(q))
+        {
+            projectsQuery = projectsQuery.Where(p => p.Name.ToLower().Contains(q.ToLower()));
+        }
+
+        
+        projectsQuery = projectsQuery
+            .OrderBy(p => p.Name)  // Adiciona ordenação para consistência
+            .Take(MAX_RESULTS);    // Limita os resultados
+
+        var projectsDto = await projectsQuery
+            .Select(p => new
+            {
+                id = p.ProjectId,  // IMPORTANTE: Mudar para "id" (minúsculo)
+                name = p.Name       // Mantém "name" (minúsculo)
+            })
+            .ToListAsync();
+
+        return Ok(projectsDto);
     }
-    
+
     /// <summary>
     /// Obtém um projeto pelo ID.
     /// </summary>
@@ -89,7 +107,7 @@ public class ProjectController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
-    
+
     /// <summary>
     /// Importa projetos a partir de um arquivo CSV.
     /// </summary>
@@ -98,12 +116,12 @@ public class ProjectController : ControllerBase
     public async Task<IActionResult> ImportProjects([FromForm] IFormFile file)
     {
         var (success, errors) = await _projectImportService.ImportFromCsvAsync(file);
-        
+
         if (!success)
         {
             return BadRequest(new { errors });
         }
-        
+
         return Ok("Projetos importados com sucesso.");
     }
 }

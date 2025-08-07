@@ -1,0 +1,84 @@
+/* Estilos gerais para o corpo da página */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+  }
+  
+  /* Container principal da tabela */
+  .requests-table-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Cabeçalho da tabela (título e botão) */
+  .requests-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+  
+  .requests-table-title {
+    color: #0d6efd;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0; /* Remove margin padrão do h1 */
+  }
+  
+  .new-request-button {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .new-request-button:hover {
+    background-color: #0b5ed7;
+  }
+  
+  /* Estilos da tabela */
+  .requests-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .requests-table th,
+  .requests-table td {
+    border: 1px solid #dee2e6;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 0.9rem;
+  }
+  
+  .requests-table thead th {
+    background-color: #e9ecef;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .requests-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+  
+  /* Estilo para o link do código da requisição */
+  .request-code-link {
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .request-code-link:hover {
+    text-decoration: underline;
+  }  

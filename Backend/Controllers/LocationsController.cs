@@ -17,7 +17,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet("countries")]
-    public async Task<IActionResult> GetCountries([FromQuery] string? q)
+    public async Task<IActionResult> GetCountries([FromQuery] string? q) // Adicione novamente o parâmetro 'q'
     {
         var countriesQuery = _context.Countries.AsQueryable();
 
@@ -52,7 +52,7 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet("cities-by-country/{countryName}")]
-    public async Task<IActionResult> GetCitiesByCountryName(string countryName, [FromQuery] string? q) 
+    public async Task<IActionResult> GetCitiesByCountryName(string countryName, [FromQuery] string? q) // Adicione novamente o parâmetro 'q'
     {
         var country = await _context.Countries
             .FirstOrDefaultAsync(c => c.Name.ToLower() == countryName.ToLower());
@@ -64,9 +64,8 @@ public class LocationsController : ControllerBase
 
         var citiesQuery = _context.Cities
             .Where(c => c.CountryId == country.Id)
-            .AsQueryable(); // Converte para IQueryable para aplicar filtros
+            .AsQueryable();
 
-        // Adiciona o filtro pelo nome da cidade se 'q' for fornecido
         if (!string.IsNullOrEmpty(q))
         {
             citiesQuery = citiesQuery.Where(c => c.Name.ToLower().Contains(q.ToLower()));

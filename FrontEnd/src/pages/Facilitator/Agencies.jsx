@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { createAgency } from "../services/api";
-import "../style/Agency.css";
+import { createAgency } from "../../services/api";
+import "../../style/Agency.css";
 
-function AddAgency() {
+function Agencies() {
   const [agency, setAgency] = useState({
     name: '',
     contactEmail: '',
@@ -186,4 +186,4 @@ function AddAgency() {
   );
 }
 
-export default AddAgency;
+export default Agencies;
