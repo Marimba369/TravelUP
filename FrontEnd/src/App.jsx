@@ -11,6 +11,7 @@ import ValidateRoles from "./components/ValidateRoles"
 import Login from "./components/Login"
 import AuthProvider from "./components/AuthProvider"
 import Agencies from "./pages/Facilitator/Agencies"
+import PendingRequests from "./pages/Facilitator/PendingRequests"
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/Project" element={<Project />} />
         <Route path="/HomeFacilitator" element={<ValidateRoles allowedRoles ={['Facilitator']}><HomeFacilitator/> </ValidateRoles>}/>
         <Route path="/login" element={<Login />} />
+        <Route path="/facilitator/requests" element={<PendingRequests />} />
         <Route path="/HomeManager" element={<HomeManager />} />
         <Route path="/TravelRequest" element={<ValidateRoles allowedRoles ={['Facilitator']}><TravelRequest /> </ValidateRoles>}/>
         <Route path="/Agency" element={<ValidateRoles allowedRoles ={['Facilitator']}><Agencies /> </ValidateRoles>}/>
