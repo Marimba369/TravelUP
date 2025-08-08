@@ -170,3 +170,205 @@ body {
       font-size: 10pt;
     }
   }
+
+  /* Container principal do dashboard */
+.printable-dashboard-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Título do dashboard */
+.dashboard-title {
+  text-align: center;
+  color: #343a40;
+  margin-bottom: 1.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+/* Estilização da tabela */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden; /* Garante que as bordas arredondadas funcionem */
+}
+
+.dashboard-table thead tr {
+  background-color: #007bff;
+  color: #ffffff;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.dashboard-table tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+/* Coluna de ações */
+.action-column {
+  text-align: center;
+  width: 200px;
+}
+
+.action-column-buttons {
+  text-align: center;
+}
+
+.action-button {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+/* Links de requisição */
+.request-link {
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.request-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Ícones de alerta */
+.alert-icon {
+  color: #ffc107;
+  font-size: 1rem;
+}
+
+/* Estilos para o botão de impressão */
+.print-button-container {
+  text-align: center;
+}
+
+.print-button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #6c757d;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.print-button:hover {
+  background-color: #5a6268;
+}
+
+/* Estilos de impressão (para ocultar elementos não necessários) */
+@media print {
+  .print-button-container,
+  .action-column {
+      display: none !important;
+  }
+  .printable-dashboard-container {
+      box-shadow: none;
+  }
+  .action-column-buttons {
+      text-align: left;
+  }
+  .tooltip-text {
+      display: inline-block !important;
+      font-weight: bold;
+      color: #6c757d;
+  }
+}
+
+/* POP-UP DE DETALHES DA REQUISIÇÃO */
+.request-details-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.request-details-modal {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: scale(0.9);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.modal-body p {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.modal-body strong {
+  color: #343a40;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.btn-close:hover {
+  color: #343a40;
+}

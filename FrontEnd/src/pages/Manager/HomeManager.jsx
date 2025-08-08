@@ -1,88 +1,152 @@
-import React from 'react';
-import '../../style/HomeManager.css'; // Importa o CSS de um arquivo externo
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import '../../style/HomeManager.css'; 
 
-function HomeManager() {
-  const requests = [
-    {
-      id: "2018/00001",
-      user: "José João",
-      travelDate: "2018-01-05",
-      returnDate: "2018-01-06",
-      cost: 550.0,
-      availableBudget: 700.0,
-      status: "approved"
-    },
-    {
-      id: "2018/00005",
-      user: "Trish Voyager",
-      travelDate: "2018-01-15",
-      returnDate: "2018-01-18",
-      cost: 1000.0,
-      availableBudget: 700.0,
-      status: "pending"
-    },
-    {
-      id: "2018/00009",
-      user: "Frank Helper",
-      travelDate: "2018-01-27",
-      returnDate: "2018-01-29",
-      cost: 2550.0,
-      availableBudget: 1500.0,
-      status: "rejected"
-    },
-    {
-      id: "2018/00027",
-      user: "José João",
-      travelDate: "2018-02-23",
-      returnDate: "2018-02-26",
-      cost: 1000.0,
-      availableBudget: 500.0,
-      status: "pending"
-    },
-    {
-      id: "2017/00019",
-      user: "Mary Decisor",
-      travelDate: "2018-03-15",
-      returnDate: "2018-03-15",
-      cost: 550.0,
-      availableBudget: 1500.0,
-      status: "approved"
-    }
-  ];
+const HomeManager = () => {
+  
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+ 
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+       
+        const [requestsResponse, projectsResponse, usersResponse] = await Promise.all([
+          axios.get('http://localhost:5028/api/request'),
+          axios.get('http://localhost:5028/api/Project'),
+          axios.get('http://localhost:5028/api/Users'),
+        ]);
+
+        const projects = projectsResponse.data;
+        const requestsData = requestsResponse.data;
+        const users = usersResponse.data;
+
+        
+        const projectsMap = new Map(projects.map(p => [p.id, p]));
+        const usersMap = new Map(users.map(u => [u.userId, u]));
+
+        // Processa as requisições para adicionar o orçamento disponível e o nome do utilizador
+        const processedRequests = requestsData.map(request => {
+          const project = projectsMap.get(request.project.projectId);
+          const user = usersMap.get(request.userId);
+          const availableBudget = project ? project.availableBudget : 0;
+          const userName = user ? user.name : 'Desconhecido';
+
+          return {
+            ...request,
+            availableBudget,
+            cost: 0, 
+            userName,
+          };
+        });
+
+        setRequests(processedRequests);
+      } catch (err) {
+        console.error("Erro ao buscar dados da API:", err);
+        setError("Não foi possível carregar os dados. Tente novamente mais tarde.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); 
+  
   const handlePrint = () => {
     window.print();
   };
 
-  const handleApprove = (requestId) => {
-    alert(`Requisição ${requestId} Aprovada!`);
+ 
+  const handleApprove = async (requestId) => {
+    try {
+      await axios.patch(`http://localhost:5028/api/Request/${requestId}/status`, {
+        status: "Approved"
+      });
+      
+      const updatedRequests = requests.map(req =>
+        req.requestId === requestId ? { ...req, status: "Approved" } : req
+      );
+      setRequests(updatedRequests);
+    } catch (err) {
+      console.error(`Erro ao aprovar requisição ${requestId}:`, err);
+      setError("Falha ao aprovar a requisição.");
+    }
   };
 
-  const handleReject = (requestId) => {
-    alert(`Requisição ${requestId} Rejeitada!`);
+  const handleReject = async (requestId) => {
+    try {
+      await axios.patch(`http://localhost:5028/api/Request/${requestId}/status`, {
+        status: "Rejected"
+      });
+      
+      const updatedRequests = requests.map(req =>
+        req.requestId === requestId ? { ...req, status: "Rejected" } : req
+      );
+      setRequests(updatedRequests);
+    } catch (err) {
+      console.error(`Erro ao rejeitar requisição ${requestId}:`, err);
+      setError("Falha ao rejeitar a requisição.");
+    }
   };
+
+  
+  const handleShowDetails = (request) => {
+    setSelectedRequest(request);
+    setShowDetailsPopup(true);
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetailsPopup(false);
+    setSelectedRequest(null);
+  };
+
+  if (loading) {
+    return <div className="loading-message">A carregar dados...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
   return (
     <div className="printable-dashboard-container">
       <h1 className="dashboard-title">Requisições Pendentes</h1>
       <table className="dashboard-table">
-        <thead><tr>
-          <th>Requisição</th>
-          <th>Data de Ida</th>
-          <th>Data de Retorno</th>
-          <th>Custo</th>
-          <th>Orçamento Disponível</th>
-          <th className="action-column">Aprovar/Rejeitar</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Requisição</th>
+            <th>Data de Ida</th>
+            <th>Data de Retorno</th>
+            <th>Custo</th>
+            <th>Orçamento Disponível</th>
+            <th className="action-column">Aprovar/Rejeitar</th>
+          </tr>
+        </thead>
         <tbody>
           {requests.map((request) => (
-            <tr key={request.id}>
+            <tr key={request.requestId}>
               <td>
-                <a href="#" className="request-link">{request.id}</a><br />
-                <small>{request.user}</small>
+                <a 
+                  href="#" 
+                  className="request-link"
+                  onClick={(e) => {
+                    e.preventDefault(); 
+                    handleShowDetails(request);
+                  }}
+                >
+                  {request.requestId}
+                </a>
+                <br />
+                <small>Utilizador: {request.userName}</small>
               </td>
-              <td>{request.travelDate}</td>
-              <td>{request.returnDate}</td>
+              <td>{new Date(request.travelDate).toLocaleDateString()}</td>
+              <td>{new Date(request.returnDate).toLocaleDateString()}</td>
               <td>€{request.cost.toFixed(2)}</td>
               <td>
                 €{request.availableBudget.toFixed(2)}
@@ -94,29 +158,29 @@ function HomeManager() {
                 )}
               </td>
               <td className="action-column-buttons">
-                {request.status === 'approved' ? (
+                {request.status.toLowerCase() === 'approved' ? (
                   <span className="badge bg-success">Aprovado</span>
-                ) : request.status === 'rejected' ? (
+                ) : request.status.toLowerCase() === 'rejected' ? (
                   <span className="badge bg-danger">Rejeitado</span>
                 ) : (
                   <div className="d-flex justify-content-center align-items-center gap-2">
                     <button
                       className="btn btn-sm btn-outline-success action-button"
-                      onClick={() => handleApprove(request.id)}
+                      onClick={() => handleApprove(request.requestId)}
                       title="Aprovar"
                     >
                       <i className="bi bi-check-lg"></i> Aprovar
                     </button>
                     <button
                       className="btn btn-sm btn-outline-danger action-button"
-                      onClick={() => handleReject(request.id)}
+                      onClick={() => handleReject(request.requestId)}
                       title="Rejeitar"
                     >
                       <i className="bi bi-x-lg"></i> Rejeitar
                     </button>
                   </div>
                 )}
-                {request.status === 'pending' && (
+                {request.status.toLowerCase() === 'pending' && (
                   <span className="tooltip-text print-only-text" style={{ display: 'none' }}>
                     Pendente de Aprovação
                   </span>
@@ -131,8 +195,33 @@ function HomeManager() {
           Imprimir Dashboard
         </button>
       </div>
+
+      {/* NOVO: Pop-up de detalhes da requisição */}
+      {showDetailsPopup && selectedRequest && (
+        <div className="request-details-modal-overlay">
+          <div className="request-details-modal">
+            <div className="modal-header">
+              <h5 className="modal-title">Detalhes da Requisição #{selectedRequest.requestId}</h5>
+              <button className="btn-close" onClick={handleCloseDetails}></button>
+            </div>
+            <div className="modal-body">
+              <p><strong>Descrição:</strong> {selectedRequest.description}</p>
+              <p><strong>Status:</strong> {selectedRequest.status}</p>
+              <p><strong>Utilizador:</strong> {selectedRequest.userName}</p>
+              <p><strong>Data de Partida:</strong> {new Date(selectedRequest.travelDate).toLocaleDateString()}</p>
+              <p><strong>Data de Retorno:</strong> {new Date(selectedRequest.returnDate).toLocaleDateString()}</p>
+              <p><strong>Origem:</strong> {selectedRequest.originCityName}</p>
+              <p><strong>Destino:</strong> {selectedRequest.destinationCityName}</p>
+              <p><strong>Precisa de Hotel:</strong> {selectedRequest.needHotel ? 'Sim' : 'Não'}</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={handleCloseDetails}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default HomeManager;

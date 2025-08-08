@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-//import StatusBadge from '../../components/common/StatusBadge';
 
 const StatusEnum = Object.freeze({
   Draft : "draft",
@@ -26,7 +25,7 @@ function PendingRequestsList() {
     const fetchRequests = async () => {
       try {
         const response = await api.get('/requests', {
-          params: { status: StatusEnum.Submitted } // Status que o TravelerRequest define
+          params: { status: StatusEnum.Submitted } 
         });
         setRequests(response.data);
       } finally {

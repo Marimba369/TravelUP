@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../../style/HomeFacilitator.css';
 import { BiPlusCircle } from 'react-icons/bi';
-import AddQuotes from './AddQuotes'; // Importe o componente AddQuotes
+import AddQuotes from './AddQuotes'; 
 
 const StatusEnum = Object.freeze({
   Draft: "draft",
@@ -25,7 +25,7 @@ const HomeFacilitator = () => {
   const [error, setError] = useState(null);
   const [users, setUsers] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showAddQuotes, setShowAddQuotes] = useState(false); // Novo estado para exibir o componente
+  const [showAddQuotes, setShowAddQuotes] = useState(false); 
 
   const fetchData = async () => {
     try {
