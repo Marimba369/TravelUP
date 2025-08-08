@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
-import "../style/TravelRequest.css";
+import "../../style/TravelRequest.css";
 
 const Status = Object.freeze({
   Draft : "draft",
@@ -12,7 +12,8 @@ const Status = Object.freeze({
   Approved : "approved",
   Rejected : "rejected",
   Pending : "pending",
-  Cancelled : "cancelled"
+  Cancelled : "cancelled",
+  WaitingForSelected: "WaitingForSelected"
 })
 
 function FacilitatorQuote({ requestId }) {
@@ -109,7 +110,7 @@ function FacilitatorQuote({ requestId }) {
       flightNumber: "",
       flightName: "",
       departure: "",
-      arrival: "",
+      arrival: "",                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
       departureDate: "",
       arrivalDate: "",
       price: ""

@@ -128,4 +128,45 @@ public class RequestController : ControllerBase
 
         return Ok(requestsDto);
     }
+
+    [HttpPatch("{id}/status")] // Rota específica para atualizar o status
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateRequestStatusDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var request = await _context.Requests.FindAsync(id);
+        if (request == null)
+        {
+            return NotFound();
+        }
+
+        if (!Enum.TryParse<RequestStatus>(dto.Status, ignoreCase: true, out var newStatus) ||
+            !Enum.IsDefined(typeof(RequestStatus), newStatus))
+        {
+            return BadRequest("Invalid Status request provided!");
+        }
+
+        request.Status = dto.Status;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!_context.Requests.Any(e => e.RequestId == id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return Ok(request);
+    }
 }

@@ -48,7 +48,8 @@ namespace Backend.Migrations
                     ProjectId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
+                    Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    AvailableBudget = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {

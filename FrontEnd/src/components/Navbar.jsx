@@ -32,7 +32,7 @@ function Navbar() {
     return (
         <nav className={`navbar navbar-expand-lg custom-navbar shadow mb-4 rounded-5 ${scrolled ? 'scrolled' : ''}`}>
             <div className="container custom-container">
-                <Link className="navbar-brand fw-bold text-light fs-4" to="/">Travel Up</Link>
+                <Link className="navbar-brand fw-bold text-light fs-4" to="/home">Travel Up</Link>
                 <button
                     className="navbar-toggler"
                     type="button"
@@ -47,11 +47,12 @@ function Navbar() {
                 <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarNav">
                     <ul className="navbar-nav ms-auto">
                         <li className="nav-item">
-                            {auth.role == "Manager" && ( <Link className="nav-link fw-semibold text-light fs-5" to="/HomeManager">Manager</Link> )}
+                            {auth.role == "Manager" && ( <Link className="nav-link fw-semibold text-light fs-5" to="/HomeManager">Dashboard</Link> )}
                         </li>
                         <li className="nav-item">
-                            {auth.role == "Facilitator" && (<Link className="nav-link fw-semibold text-light fs-5" to="/HomeFacilitator">Falilitator</Link> )}
+                            {auth.role == "Facilitator" && (<Link className="nav-link fw-semibold text-light fs-5" to="/HomeFacilitator">Dashboard</Link> )}
                         </li>
+                        
                         <li className="nav-item">
                             {auth.role == "Manager" && ( <Link className="nav-link fw-semibold text-light fs-5" to="/Project">Projetos</Link> )}
                         </li>
@@ -59,8 +60,13 @@ function Navbar() {
                             <Link className="nav-link fw-semibold text-light fs-5" to="/TravelRequest">Requisição</Link>
                         </li>
                         <li className="nav-item">
-                            {auth.role == "Manager" || auth.role == "Facilitator" && (<Link className="nav-link fw-semibold text-light fs-5" to="/Agency">Agencia</Link> )}
+                            {auth.role == "Facilitator" && (<Link className="nav-link fw-semibold text-light fs-5" to="/Agency">Agency</Link> )}
                         </li>
+
+                        <li className="nav-item">
+                            <Link className="nav-link fw-semibold text-light fs-5" to="/">Sair</Link> 
+                        </li>
+                        
                     </ul>
                 </div>
             </div>

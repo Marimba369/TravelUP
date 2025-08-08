@@ -27,7 +27,12 @@ public class ProjectController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateProject([FromBody] CreateProjectDto dto)
     {
-        var project = new Project { Name = dto.Name, Description = dto.Description };
+        var project = new Project
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            AvailableBudget = dto.AvailableBudget
+        };
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetProjectById), new { id = project.ProjectId }, project);
@@ -36,7 +41,7 @@ public class ProjectController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllProjects([FromQuery] string? q)
     {
-        const int MAX_RESULTS = 20; // Define o limite máximo de resultados
+        const int MAX_RESULTS = 20;
 
         var projectsQuery = _context.Projects.AsQueryable();
 
@@ -44,17 +49,18 @@ public class ProjectController : ControllerBase
         {
             projectsQuery = projectsQuery.Where(p => p.Name.ToLower().Contains(q.ToLower()));
         }
-
         
         projectsQuery = projectsQuery
-            .OrderBy(p => p.Name)  // Adiciona ordenação para consistência
-            .Take(MAX_RESULTS);    // Limita os resultados
+            .OrderBy(p => p.Name)
+            .Take(MAX_RESULTS);
 
         var projectsDto = await projectsQuery
             .Select(p => new
             {
-                id = p.ProjectId,  // IMPORTANTE: Mudar para "id" (minúsculo)
-                name = p.Name       // Mantém "name" (minúsculo)
+                id = p.ProjectId,
+                name = p.Name,
+                // 🚨 Updated: Include the AvailableBudget property
+                availableBudget = p.AvailableBudget 
             })
             .ToListAsync();
 

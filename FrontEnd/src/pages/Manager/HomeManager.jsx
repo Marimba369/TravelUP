@@ -1,5 +1,5 @@
 import React from 'react';
-import '../style/HomeManager.css'; // Importa o CSS de um arquivo externo
+import '../../style/HomeManager.css'; // Importa o CSS de um arquivo externo
 
 function HomeManager() {
   const requests = [

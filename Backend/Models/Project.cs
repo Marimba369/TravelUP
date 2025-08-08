@@ -14,6 +14,8 @@ public class Project
 
     [StringLength(200)]
     public string? Description { get; set; }
+
+    public decimal AvailableBudget { get; set; }
     
     // Propriedade de navegação para a relação com a tabela Request
     public ICollection<Request> Requests { get; set; } = new List<Request>();

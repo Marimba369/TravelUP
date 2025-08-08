@@ -1,4 +1,4 @@
-import CSVUploader from "../components/CSVUploader";
+import CSVUploader from "../../components/CSVUploader";
 
 function Project() {
 

@@ -94,6 +94,9 @@ namespace Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
 
+                    b.Property<decimal>("AvailableBudget")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Description")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");

@@ -12,7 +12,7 @@ using TravelUp.Data;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250807143300_AddCountriesAndCities")]
+    [Migration("20250808001213_AddCountriesAndCities")]
     partial class AddCountriesAndCities
     {
         /// <inheritdoc />
@@ -96,6 +96,9 @@ namespace Backend.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
+
+                    b.Property<decimal>("AvailableBudget")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Description")
                         .HasMaxLength(200)

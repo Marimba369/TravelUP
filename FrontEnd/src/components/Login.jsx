@@ -45,16 +45,16 @@ const Login = () => {
 
       switch (user.role) {
         case "traveler":
-          navigate("/traveler-dashboard");
+          navigate("/RequestDetail");
           break;
         case "facilitator":
-          navigate("/facilitator-dashboard");
+          navigate("/HomeFacilitator");
           break;
         case "manager":
-          navigate("/manager-dashboard");
+          navigate("/HomeManager");
           break;
         default:
-          navigate("/dashboard");
+          navigate("/");
       }
     } catch (err) {
       console.error("Erro:", err);

@@ -40,7 +40,7 @@ function CSVUploader() {
           setError('Erro ao processar o arquivo: ' + results.errors[0].message);
         } else {
           // Os cabeçalhos do CSV devem ser "Name" e "Description" para corresponder ao backend
-          const expectedHeaders = ['Name', 'Description'];
+          const expectedHeaders = ['Name', 'Description', 'Budget'];
           const fileHeaders = results.meta.fields;
           
           if (fileHeaders.length === expectedHeaders.length && 
@@ -102,7 +102,7 @@ function CSVUploader() {
 
   // Função para baixar o template
   const downloadTemplate = () => {
-    const template = "Name,Description\nProjeto A,Viagem de negócios para São Paulo\nProjeto B,Compra de equipamentos para escritório";
+    const template = "Name,Description,Budget\nLançamento App Móvel,Desenvolvimento de um novo aplicativo de viagens para iOS e Android,120000.50\nReforma Escritório,Compra de equipamentos e mobiliário para renovação do escritório,50000.00";
     const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

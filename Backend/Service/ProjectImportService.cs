@@ -5,8 +5,18 @@ using Microsoft.EntityFrameworkCore;
 using TravelUp.Data;
 using TravelUp.Models;
 using TravelUp.DTOs;
+using System.Globalization; // 🚨 Adicionado: Importar para CultureInfo
 
 namespace TravelUp.Service;
+
+// 🚨 Adicionado: Definição do DTO para mapear as colunas do CSV
+public class CsvProjectRecord
+{
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public decimal Budget { get; set; }
+}
+
 public class ProjectImportService
 {
     private readonly AppDbContext _context;
@@ -27,10 +37,11 @@ public class ProjectImportService
         var newProjects = new List<Project>();
 
         using (var reader = new StreamReader(file.OpenReadStream()))
-        using (var csv = new CsvReader(reader, new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)))
+        using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
         {
             try
             {
+                // A biblioteca CsvHelper mapeia as colunas do CSV para este DTO
                 var records = csv.GetRecords<CsvProjectRecord>().ToList();
 
                 foreach (var record in records)
@@ -44,7 +55,9 @@ public class ProjectImportService
                     var project = new Project
                     {
                         Name = record.Name,
-                        Description = record.Description
+                        Description = record.Description,
+                        // Mapeamento corrigido para o DTO
+                        AvailableBudget = record.Budget
                     };
                     newProjects.Add(project);
                 }

@@ -11,5 +11,6 @@ public enum RequestStatus
     Approved = 7,
     Rejected = 8,
     Pending = 9,
-    Cancelled = 10
+    Cancelled = 10,
+    WaitingForSelected = 11
 }

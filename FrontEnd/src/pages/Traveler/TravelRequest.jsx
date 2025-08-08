@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { createTravelRequest } from "../services/api";
-import ComboBox from '../components/ComboBox'; 
-import "../style/TravelRequest.css";
+import { createTravelRequest } from "../../services/api";
+import ComboBox from '../../components/ComboBox'; 
+import "../../style/TravelRequest.css";
+import { useAuth } from '../../components/AuthProvider';
 
 const StatusEnum = Object.freeze({
   Draft : "draft",
@@ -21,6 +22,8 @@ function TravelerRequest() {
   const [requestStatusEnum, setRequestStatusEnum] = useState(StatusEnum.Draft);
   const [message, setMessage] = useState('');
   const [travelRequestId, setTravelRequestId] = useState(null);
+
+  const { userId, user, role } = useAuth();
 
   const [formData, setFormData] = useState({
     description: "",
@@ -106,7 +109,7 @@ function TravelerRequest() {
         returnDate: formData.isRoundTrip ? formData.returnDate : null,
         isRoundTrip: formData.isRoundTrip,
         needHotel: formData.needHotel,
-        userId: 1, // TODO: substituir pelo ID do usuário logado
+        userId: userId,
         status: StatusEnum.WaitingForQuotes,
         projectId: selectedProject ? selectedProject.id : null,
         originCityId: selectedOriginCity.id,
